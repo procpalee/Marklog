@@ -1,0 +1,89 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        --sidebar-bg: #16213e;
+        --glass-bg: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --text-main: #ffffff;
+        --text-muted: #94a3b8;
+        --input-bg: rgba(0, 0, 0, 0.3);
+        --accent-color: #60a5fa;
+        --border-color: #2a3b55;
+
+        --font-main: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    }
+
+    body {
+        @apply m-0 min-h-screen overflow-hidden bg-[#0f172a] text-white;
+        font-family: var(--font-main);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #64748b;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+}
+
+@layer components {
+    .glass-panel {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(12px);
+    }
+
+    .input-base {
+        width: 100%;
+        padding: 0.625rem;
+        border-radius: 0.5rem;
+        border: 1px solid #2a3b55;
+        background-color: rgba(0, 0, 0, 0.3);
+        color: white;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .input-base:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+    }
+
+    .btn-primary {
+        background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
+        color: white;
+        font-weight: 700;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 210, 255, 0.4);
+    }
+
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+}
