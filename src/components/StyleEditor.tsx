@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleConfig } from '../utils/styleConverter';
+import { StyleConfig, defaultStyleConfig } from '../utils/styleConverter';
 
 interface StyleEditorProps {
     config: StyleConfig;
@@ -9,15 +9,23 @@ interface StyleEditorProps {
 // --- Helper Components ---
 
 const SectionHeader = ({ title }: { title: string }) => (
-    <h3 className="text-sm font-bold text-[#60a5fa] uppercase tracking-wider mb-3 pb-1 border-b border-[#2a3b55]/50 flex items-center gap-2">
+    <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#2a3b55]/50">
         <span className="w-1.5 h-1.5 rounded-full bg-[#60a5fa]"></span>
-        {title}
-    </h3>
+        <h3 className="text-[15px] font-bold text-[#60a5fa] uppercase tracking-wider">
+            {title}
+        </h3>
+    </div>
 );
 
-// Unified Label Component
-const InputLabel = ({ children }: { children: React.ReactNode }) => (
-    <label className="text-[0.85rem] text-[#8d99ae] font-medium mb-1.5 block tracking-wide truncate">
+const SubSectionHeader = ({ title }: { title: string }) => (
+    <div className="text-[13px] font-semibold text-[#dbeafe] mb-2 flex items-center gap-1.5">
+        <span className="w-1 h-3 bg-[#3b82f6]/50 rounded-sm"></span>
+        {title}
+    </div>
+);
+
+const InputLabel = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
+    <label className={`text-[12px] text-gray-400 font-medium whitespace-nowrap ${className}`}>
         {children}
     </label>
 );
@@ -25,46 +33,84 @@ const InputLabel = ({ children }: { children: React.ReactNode }) => (
 const StyledInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
     <input
         {...props}
-        className={`w-full bg-black/30 border border-[#2a3b55] rounded-lg px-3 py-2.5 text-white text-[0.9rem] focus:border-[#60a5fa] focus:ring-1 focus:ring-[#60a5fa] outline-none transition-all placeholder-gray-600 ${props.className}`}
+        className={`w-full bg-black/20 border border-[#2a3b55] rounded-md px-2.5 py-1.5 text-white text-[13px] focus:border-[#60a5fa] focus:ring-1 focus:ring-[#60a5fa] outline-none transition-all placeholder-gray-600 ${props.className}`}
     />
 );
 
 const StyledSelect = ({ children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) => (
-    <div className="relative w-full">
+    <div className={`relative w-full ${props.className}`}>
         <select
             {...props}
-            className={`w-full bg-black/30 border border-[#2a3b55] rounded-lg px-3 py-2.5 text-white text-[0.9rem] focus:border-[#60a5fa] focus:ring-1 focus:ring-[#60a5fa] outline-none transition-all appearance-none cursor-pointer ${props.className}`}
+            className="w-full bg-black/20 border border-[#2a3b55] rounded-md pl-2.5 pr-8 py-1.5 text-white text-[13px] focus:border-[#60a5fa] focus:ring-1 focus:ring-[#60a5fa] outline-none transition-all appearance-none cursor-pointer"
         >
             {children}
         </select>
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
             </svg>
         </div>
     </div>
 );
 
-const ColorInput = ({ label, value, onChange }: { label?: string, value: string, onChange: (val: string) => void }) => (
-    <div className="flex flex-col min-w-0">
-        {label && <InputLabel>{label}</InputLabel>}
-        <div className="flex items-center gap-2 group min-w-0">
-            <div className="relative w-10 h-10 rounded-full overflow-hidden border border-[#2a3b55] group-hover:border-[#60a5fa] transition-colors shrink-0">
+interface ColorInputProps {
+    value: string;
+    onChange: (val: string) => void;
+    defaultValue?: string;
+    placeholder?: string;
+    label?: string; // Add optional label logic inside if needed, or handle outside
+}
+
+const ColorInput = ({ value, onChange, defaultValue, placeholder }: ColorInputProps) => {
+    return (
+        <div className="flex items-center gap-1.5 min-w-[120px] relative group h-[34px]">
+            {/* Color Preview & Picker */}
+            <div className="relative w-[34px] h-[34px] rounded-md overflow-hidden border border-[#2a3b55] group-hover:border-[#60a5fa] transition-colors shrink-0">
                 <input
                     type="color"
-                    value={value}
+                    value={value || '#000000'}
                     onChange={(e) => onChange(e.target.value)}
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] p-0 cursor-pointer border-none"
                     style={{ padding: 0 }}
                 />
             </div>
+
+            {/* Text Input */}
             <input
                 type="text"
                 value={value}
+                placeholder={placeholder || "#000000"}
                 onChange={(e) => onChange(e.target.value)}
-                className="flex-1 min-w-0 bg-black/30 border border-[#2a3b55] rounded-lg px-3 py-2.5 text-white text-[0.9rem] font-mono uppercase focus:border-[#60a5fa] outline-none"
+                className="flex-1 w-full min-w-[70px] bg-black/20 border border-[#2a3b55] rounded-md px-2 py-1.5 text-white text-[12px] font-mono uppercase focus:border-[#60a5fa] outline-none h-full"
             />
+
+            {/* Reset Button */}
+            {defaultValue !== undefined && value !== defaultValue && (
+                <button
+                    onClick={() => onChange(defaultValue)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                    title="기본값으로 복원"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                        <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0v2.433l-.31-.31a7 7 0 00-11.712 3.138.75.75 0 001.449.39 5.5 5.5 0 019.201-2.466l.312.312h-2.433a.75.75 0 000 1.5h4.242z" clipRule="evenodd" />
+                    </svg>
+                </button>
+            )}
         </div>
+    );
+};
+
+// --- Container Components ---
+
+const SectionCard = ({ children }: { children: React.ReactNode }) => (
+    <div className="bg-[#0f172a]/40 p-3.5 rounded-xl border border-[#2a3b55]/50 flex flex-col gap-3 h-full">
+        {children}
+    </div>
+);
+
+const Row = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
+    <div className={`flex items-center gap-2 ${className}`}>
+        {children}
     </div>
 );
 
@@ -95,17 +141,18 @@ const StyleEditor: React.FC<StyleEditorProps> = ({ config, onChange }) => {
     };
 
     return (
-        <div className="flex flex-col p-5 gap-6">
-            {/* 1. Global & Headings Section */}
+        <div className="flex flex-col p-5 gap-8">
+            {/* 1. 전역 스타일 */}
             <div>
-                <SectionHeader title="기본 설정 & 타이포그래피" />
-                <div className="flex flex-col gap-4">
+                <SectionHeader title="전역 스타일" />
+                <div className="flex flex-col gap-3">
 
-                    {/* Global Settings */}
-                    <div className="bg-[#0f172a]/40 p-4 rounded-xl border border-[#2a3b55]/50 flex flex-col gap-3">
-                        <span className="text-[#dbeafe] font-bold text-xs uppercase mb-1">전역 설정 (Global)</span>
+                    {/* 1) 폰트 및 행간 */}
+                    <SectionCard>
+                        <SubSectionHeader title="폰트 및 행간" />
+
                         <div>
-                            <InputLabel>기본 폰트</InputLabel>
+                            <InputLabel className="mb-1 block">기본 폰트</InputLabel>
                             <StyledSelect
                                 value={config.global.fontFamily.split(',')[0].replace(/"/g, '')}
                                 onChange={(e) => {
@@ -120,35 +167,39 @@ const StyleEditor: React.FC<StyleEditorProps> = ({ config, onChange }) => {
                                 <option value="MaruBuri">마루부리</option>
                             </StyledSelect>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="min-w-0">
-                                <InputLabel>헤더 행간</InputLabel>
+
+                        <Row>
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">헤더 행간</InputLabel>
                                 <StyledInput
                                     type="number" step="0.1" value={config.global.headerLineHeight}
                                     onChange={(e) => handleChange('global', 'headerLineHeight', e.target.value)}
                                 />
                             </div>
-                            <div className="min-w-0">
-                                <InputLabel>본문 행간</InputLabel>
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">본문 행간</InputLabel>
                                 <StyledInput
                                     type="number" step="0.1" value={config.global.contentLineHeight}
                                     onChange={(e) => handleChange('global', 'contentLineHeight', e.target.value)}
                                 />
                             </div>
-                        </div>
-                    </div>
+                        </Row>
+                    </SectionCard>
 
-                    {/* Body Text Style */}
-                    <div className="bg-[#0f172a]/40 p-4 rounded-xl border border-[#2a3b55]/50 flex flex-col gap-3">
-                        <span className="text-[#dbeafe] font-bold text-xs uppercase mb-1">본문 (Body Text)</span>
-                        <div className="grid grid-cols-1 gap-3">
-                            <ColorInput
-                                label="색상"
-                                value={config.content.paragraph.color}
-                                onChange={(val) => handleDeepChange('content', 'paragraph', 'color', val)}
-                            />
-                            <div className="min-w-0">
-                                <InputLabel>크기</InputLabel>
+                    {/* 2) 본문 */}
+                    <SectionCard>
+                        <SubSectionHeader title="본문 (Paragraph)" />
+                        <Row>
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">색상</InputLabel>
+                                <ColorInput
+                                    value={config.content.paragraph.color}
+                                    onChange={(val) => handleDeepChange('content', 'paragraph', 'color', val)}
+                                    defaultValue={defaultStyleConfig.content.paragraph.color}
+                                />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">크기</InputLabel>
                                 <StyledSelect
                                     value={config.content.paragraph.fontSize.replace('px', '')}
                                     onChange={(e) => {
@@ -156,35 +207,38 @@ const StyleEditor: React.FC<StyleEditorProps> = ({ config, onChange }) => {
                                         handleDeepChange('content', 'paragraph', 'fontSize', val ? `${val}px` : '');
                                     }}
                                 >
-                                    <option value="11">11px</option>
-                                    <option value="13">13px</option>
-                                    <option value="15">15px</option>
-                                    <option value="16">16px</option>
-                                    <option value="19">19px</option>
-                                    <option value="24">24px</option>
-                                    <option value="28">28px</option>
-                                    <option value="30">30px</option>
-                                    <option value="34">34px</option>
-                                    <option value="38">38px</option>
+                                    {[11, 13, 15, 16, 19, 24, 28, 30, 34, 38].map(size => (
+                                        <option key={size} value={size}>{size}px</option>
+                                    ))}
                                 </StyledSelect>
                             </div>
-                        </div>
-                    </div>
+                        </Row>
+                    </SectionCard>
+                </div>
+            </div>
 
-                    {/* Headers h1-h3 */}
-                    {['h1', 'h2', 'h3'].map((tag) => {
-                        const level = tag as 'h1' | 'h2' | 'h3';
+            {/* 2. 헤더 스타일 */}
+            <div>
+                <SectionHeader title="헤더 스타일" />
+                <div className="flex flex-col gap-3">
+                    {['h1', 'h2', 'h3', 'h4', 'h5'].map((tag) => {
+                        const level = tag as 'h1' | 'h2' | 'h3' | 'h4' | 'h5';
+                        const defaultHeader = defaultStyleConfig.headers[level];
+
                         return (
-                            <div key={level} className="bg-[#0f172a]/40 p-4 rounded-xl border border-[#2a3b55]/50 flex flex-col gap-3">
-                                <span className="text-[#dbeafe] font-bold text-xs uppercase mb-1">{tag} 스타일</span>
-                                <div className="grid grid-cols-1 gap-3">
-                                    <ColorInput
-                                        label="색상"
-                                        value={config.headers[level].color}
-                                        onChange={(val) => handleDeepChange('headers', level, 'color', val)}
-                                    />
-                                    <div className="min-w-0">
-                                        <InputLabel>크기</InputLabel>
+                            <SectionCard key={level}>
+                                <SubSectionHeader title={`${tag.toUpperCase()}`} />
+                                <Row>
+                                    <div className="flex-1 min-w-0">
+                                        <InputLabel className="mb-1 block">색상</InputLabel>
+                                        <ColorInput
+                                            value={config.headers[level].color}
+                                            onChange={(val) => handleDeepChange('headers', level, 'color', val)}
+                                            defaultValue={defaultHeader?.color}
+                                        />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <InputLabel className="mb-1 block">크기</InputLabel>
                                         <StyledSelect
                                             value={config.headers[level].fontSize.replace('px', '')}
                                             onChange={(e) => {
@@ -192,157 +246,151 @@ const StyleEditor: React.FC<StyleEditorProps> = ({ config, onChange }) => {
                                                 handleDeepChange('headers', level, 'fontSize', val ? `${val}px` : '');
                                             }}
                                         >
-                                            <option value="11">11px</option>
-                                            <option value="13">13px</option>
-                                            <option value="15">15px</option>
-                                            <option value="16">16px</option>
-                                            <option value="19">19px</option>
-                                            <option value="24">24px</option>
-                                            <option value="28">28px</option>
-                                            <option value="30">30px</option>
-                                            <option value="34">34px</option>
-                                            <option value="38">38px</option>
+                                            {[11, 13, 15, 16, 19, 24, 28, 30, 34, 38].map(size => (
+                                                <option key={size} value={size}>{size}px</option>
+                                            ))}
                                         </StyledSelect>
                                     </div>
-                                </div>
-                            </div>
+                                </Row>
+                            </SectionCard>
                         );
                     })}
                 </div>
             </div>
 
-            {/* 2. Extra Syntax Section */}
+            {/* 3. 마크다운 요소 스타일 */}
             <div>
-                <SectionHeader title="기타 문법 스타일" />
-                <div className="flex flex-col gap-4">
+                <SectionHeader title="마크다운 요소 스타일" />
+                <div className="flex flex-col gap-3">
 
-                    {/* Headers h4-h5 */}
-                    {['h4', 'h5'].map((tag) => {
-                        const level = tag as 'h4' | 'h5';
-                        return (
-                            <div key={level} className="bg-[#0f172a]/40 p-4 rounded-xl border border-[#2a3b55]/50 flex flex-col gap-3">
-                                <span className="text-[#dbeafe] font-bold text-xs uppercase mb-1">{tag} 스타일</span>
-                                <div className="grid grid-cols-1 gap-3">
-                                    <ColorInput
-                                        label="색상"
-                                        value={config.headers[level].color}
-                                        onChange={(val) => handleDeepChange('headers', level, 'color', val)}
-                                    />
-                                    <div className="min-w-0">
-                                        <InputLabel>크기</InputLabel>
-                                        <StyledSelect
-                                            value={config.headers[level].fontSize.replace('px', '')}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                handleDeepChange('headers', level, 'fontSize', val ? `${val}px` : '');
-                                            }}
-                                        >
-                                            <option value="11">11px</option>
-                                            <option value="13">13px</option>
-                                            <option value="15">15px</option>
-                                            <option value="16">16px</option>
-                                            <option value="19">19px</option>
-                                            <option value="24">24px</option>
-                                            <option value="28">28px</option>
-                                            <option value="30">30px</option>
-                                            <option value="34">34px</option>
-                                            <option value="38">38px</option>
-                                        </StyledSelect>
-                                    </div>
-                                </div>
+                    {/* 1) 강조 */}
+                    <SectionCard>
+                        <SubSectionHeader title="강조 (Emphasis)" />
+                        <Row>
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">Bold 색상</InputLabel>
+                                <ColorInput
+                                    value={config.content.bold.color}
+                                    onChange={(val) => handleDeepChange('content', 'bold', 'color', val)}
+                                    placeholder="기본(본문)"
+                                    defaultValue={defaultStyleConfig.content.bold.color}
+                                />
                             </div>
-                        );
-                    })}
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">Italic 색상</InputLabel>
+                                <ColorInput
+                                    value={config.content.italic.color}
+                                    onChange={(val) => handleDeepChange('content', 'italic', 'color', val)}
+                                    placeholder="기본(본문)"
+                                    defaultValue={defaultStyleConfig.content.italic.color}
+                                />
+                            </div>
+                        </Row>
+                    </SectionCard>
 
-                    {/* Emphasis */}
-                    <div className="bg-[#0f172a]/40 p-4 rounded-xl border border-[#2a3b55]/50 flex flex-col gap-3">
-                        <span className="text-[#dbeafe] font-bold text-xs uppercase mb-1">강조 (Emphasis)</span>
-                        <div className="grid grid-cols-1 gap-3">
-                            <ColorInput
-                                label="Bold 색상"
-                                value={config.content.bold.color || config.content.paragraph.color}
-                                onChange={(val) => handleDeepChange('content', 'bold', 'color', val)}
-                            />
-                            <ColorInput
-                                label="Italic 색상"
-                                value={config.content.italic.color || config.content.paragraph.color}
-                                onChange={(val) => handleDeepChange('content', 'italic', 'color', val)}
-                            />
-                        </div>
-                    </div>
+                    {/* 2) 하이라이트 */}
+                    <SectionCard>
+                        <SubSectionHeader title="하이라이트 (Highlight)" />
+                        <Row>
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">배경색</InputLabel>
+                                <ColorInput
+                                    value={config.content.highlight.bg}
+                                    onChange={(val) => handleDeepChange('content', 'highlight', 'bg', val)}
+                                    defaultValue={defaultStyleConfig.content.highlight.bg}
+                                />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">글자색</InputLabel>
+                                <ColorInput
+                                    value={config.content.highlight.color}
+                                    onChange={(val) => handleDeepChange('content', 'highlight', 'color', val)}
+                                    placeholder="기본(본문)"
+                                    defaultValue={defaultStyleConfig.content.highlight.color}
+                                />
+                            </div>
+                        </Row>
+                    </SectionCard>
 
-                    {/* Highlight */}
-                    <div className="bg-[#0f172a]/40 p-4 rounded-xl border border-[#2a3b55]/50 flex flex-col gap-3">
-                        <span className="text-[#dbeafe] font-bold text-xs uppercase mb-1">하이라이트 (Highlight)</span>
-                        <div className="grid grid-cols-1 gap-3">
-                            <ColorInput
-                                label="배경색"
-                                value={config.content.highlight.bg}
-                                onChange={(val) => handleDeepChange('content', 'highlight', 'bg', val)}
-                            />
-                            <ColorInput
-                                label="글자색"
-                                value={config.content.highlight.color || config.content.paragraph.color}
-                                onChange={(val) => handleDeepChange('content', 'highlight', 'color', val)}
-                            />
+                    {/* 3) 인용구 */}
+                    <SectionCard>
+                        <SubSectionHeader title="인용구 (Blockquote)" />
+                        <div className="flex flex-col gap-3">
+                            <Row>
+                                <div className="flex-1 min-w-0">
+                                    <InputLabel className="mb-1 block">배경색</InputLabel>
+                                    <ColorInput
+                                        value={config.content.blockquote.bg}
+                                        onChange={(val) => handleDeepChange('content', 'blockquote', 'bg', val)}
+                                        defaultValue={defaultStyleConfig.content.blockquote.bg}
+                                    />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <InputLabel className="mb-1 block">글자색</InputLabel>
+                                    <ColorInput
+                                        value={config.content.blockquote.color}
+                                        onChange={(val) => handleDeepChange('content', 'blockquote', 'color', val)}
+                                        defaultValue={defaultStyleConfig.content.blockquote.color}
+                                    />
+                                </div>
+                            </Row>
+                            <div>
+                                <InputLabel className="mb-1 block">테두리 색상</InputLabel>
+                                <ColorInput
+                                    value={config.content.blockquote.border}
+                                    onChange={(val) => handleDeepChange('content', 'blockquote', 'border', val)}
+                                    defaultValue={defaultStyleConfig.content.blockquote.border}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    </SectionCard>
 
-                    {/* Blockquote */}
-                    <div className="bg-[#0f172a]/40 p-4 rounded-xl border border-[#2a3b55]/50 flex flex-col gap-3">
-                        <span className="text-[#dbeafe] font-bold text-xs uppercase mb-1">인용구 (Blockquote)</span>
-                        <div className="grid grid-cols-1 gap-3">
-                            <ColorInput
-                                label="배경색"
-                                value={config.content.blockquote.bg}
-                                onChange={(val) => handleDeepChange('content', 'blockquote', 'bg', val)}
-                            />
-                            <ColorInput
-                                label="테두리"
-                                value={config.content.blockquote.border}
-                                onChange={(val) => handleDeepChange('content', 'blockquote', 'border', val)}
-                            />
-                            <ColorInput
-                                label="글자색"
-                                value={config.content.blockquote.color}
-                                onChange={(val) => handleDeepChange('content', 'blockquote', 'color', val)}
-                            />
-                        </div>
-                    </div>
+                    {/* 4) 인라인 코드 */}
+                    <SectionCard>
+                        <SubSectionHeader title="인라인 코드 (Inline Code)" />
+                        <Row>
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">배경색</InputLabel>
+                                <ColorInput
+                                    value={config.content.inlineCode.bg}
+                                    onChange={(val) => handleDeepChange('content', 'inlineCode', 'bg', val)}
+                                    defaultValue={defaultStyleConfig.content.inlineCode.bg}
+                                />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">글자색</InputLabel>
+                                <ColorInput
+                                    value={config.content.inlineCode.color}
+                                    onChange={(val) => handleDeepChange('content', 'inlineCode', 'color', val)}
+                                    defaultValue={defaultStyleConfig.content.inlineCode.color}
+                                />
+                            </div>
+                        </Row>
+                    </SectionCard>
 
-                    {/* Inline Code */}
-                    <div className="bg-[#0f172a]/40 p-4 rounded-xl border border-[#2a3b55]/50 flex flex-col gap-3">
-                        <span className="text-[#dbeafe] font-bold text-xs uppercase mb-1">인라인 코드 (Inline Code)</span>
-                        <div className="grid grid-cols-1 gap-3">
-                            <ColorInput
-                                label="배경색"
-                                value={config.content.inlineCode.bg}
-                                onChange={(val) => handleDeepChange('content', 'inlineCode', 'bg', val)}
-                            />
-                            <ColorInput
-                                label="글자색"
-                                value={config.content.inlineCode.color}
-                                onChange={(val) => handleDeepChange('content', 'inlineCode', 'color', val)}
-                            />
-                        </div>
-                    </div>
+                    {/* 5) 표 */}
+                    <SectionCard>
+                        <SubSectionHeader title="표 (Table)" />
+                        <Row>
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">헤더 배경</InputLabel>
+                                <ColorInput
+                                    value={config.content.table.headerBg}
+                                    onChange={(val) => handleDeepChange('content', 'table', 'headerBg', val)}
+                                    defaultValue={defaultStyleConfig.content.table.headerBg}
+                                />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">테두리 색상</InputLabel>
+                                <ColorInput
+                                    value={config.content.table.borderColor}
+                                    onChange={(val) => handleDeepChange('content', 'table', 'borderColor', val)}
+                                    defaultValue={defaultStyleConfig.content.table.borderColor}
+                                />
+                            </div>
+                        </Row>
+                    </SectionCard>
 
-                    {/* Table */}
-                    <div className="bg-[#0f172a]/40 p-4 rounded-xl border border-[#2a3b55]/50 flex flex-col gap-3">
-                        <span className="text-[#dbeafe] font-bold text-xs uppercase mb-1">표 (Table)</span>
-                        <div className="grid grid-cols-1 gap-3">
-                            <ColorInput
-                                label="헤더 배경"
-                                value={config.content.table.headerBg}
-                                onChange={(val) => handleDeepChange('content', 'table', 'headerBg', val)}
-                            />
-                            <ColorInput
-                                label="테두리"
-                                value={config.content.table.borderColor}
-                                onChange={(val) => handleDeepChange('content', 'table', 'borderColor', val)}
-                            />
-                        </div>
-                    </div>
                 </div>
             </div>
         </div >

@@ -35,7 +35,7 @@ export const defaultStyleConfig: StyleConfig = {
     },
     headers: {
         h1: { color: '#000000', fontSize: '34px', fontWeight: 'bold' },
-        h2: { color: '#000000', fontSize: '30px', fontWeight: 'bold' },
+        h2: { color: '#000000', fontSize: '28px', fontWeight: 'bold' },
         h3: { color: '#000000', fontSize: '24px', fontWeight: 'bold' },
         h4: { color: '#000000', fontSize: '19px', fontWeight: 'bold' },
         h5: { color: '#000000', fontSize: '16px', fontWeight: 'bold' },

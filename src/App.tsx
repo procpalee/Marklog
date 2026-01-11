@@ -6,72 +6,96 @@ import 'highlight.js/styles/github.css';
 import { convertToNaverHtml, defaultStyleConfig, StyleConfig } from './utils/styleConverter';
 import StyleEditor from './components/StyleEditor';
 
-const DEFAULT_MARKDOWN = `
-# MD to Naver Converter
+const DEFAULT_MARKDOWN = `# MarkLog 예시
 
-이 도구는 **마크다운(Markdown)** 으로 작성한 글을 **네이버 블로그** 스타일의 HTML로 변환해줍니다.
-왼쪽 패널에서 마크다운을 작성하면, 오른쪽에서 실시간으로 미리보기(Preview)를 확인할 수 있습니다.
+#### 1️⃣ 텍스트 스타일(Text Style)
 
-## 🛠 지원하는 문법 예시
+**굵게**, *기울임*, ~~취소선~~, ==하이라이트==
 
-### 1. 텍스트 스타일
-글자를 **진하게(Bold)** 강조하거나, *기울임(Italic)* 으로 표현할 수 있습니다.
-물론 ~~취소선(Strikethrough)~~ 이나 ==하이라이트(Highlight)== 도 지원합니다.
+#### 2️⃣ 제목(Heading)
 
-### 2. 헤딩 (Headers)
-# H1 제목입니다 (가장 큼)
-## H2 제목입니다 (주요 섹션)
-### H3 제목입니다 (소제목)
-#### H4 제목입니다 (세부 제목)
-##### H5 제목입니다 (세부 제목)
+# H1 제목
+## H2 제목
+### H3 제목
+#### H4 제목
+##### H5 제목
 
-### 3. 목록 (Lists)
-**순서 없는 목록:**
-- 사과
-- 바나나
-- 포도
+#### 3️⃣ 목록(List)
 
-**순서 있는 목록:**
-1. 첫 번째 할 일
-2. 두 번째 할 일
-3. 세 번째 할 일
+- 순서 없는 항목 1
+- 순서 없는 항목 2
 
-### 4. 인용구 (Blockquote)
-> "중요한 내용은 인용구로 감싸서 강조해보세요.
-> 독자의 시선을 사로잡을 수 있습니다."
+1. 순서 있는 항목 1
+2. 순서 있는 항목 2
 
-### 5. 코드 (Code)
-문장 중간에 \`console.log('Hello')\` 처럼 **인라인 코드**를 넣을 수 있습니다.
+#### 4️⃣ 인용구(Blockquote)
 
-여러 줄의 코드는 **코드 블록**을 사용하세요. (하이라이팅 지원 ✨)
+> 인용구 예시입니다.
+
+#### 5️⃣ 인라인 코드(Inline Code)
+
+\`인라인 코드 예시\`
+
+#### 6️⃣ 코드 블록(Code Block)
 
 \`\`\`javascript
-// JavaScript 예시
-function sayHello() {
-    console.log(\`안녕하세요!\`);
-    return true;
-}
+// 코드 블록 예시
+console.log("Hello, MarkLog!");
 \`\`\`
 
-\`\`\`python
-# Python 예시
-def calculate_sum(a, b):
-    return a + b
-\`\`\`
+#### 7️⃣ 수평선(HR)
+---
 
-### 6. 링크 및 이미지
-[생산적 회계사 바로가기](https://www.procpa.co.kr) 처럼 링크를 걸 수 있습니다.
+#### 8️⃣ 링크(Link)
 
-이미지도 간편하게 넣으세요:
-![생산적 회계사](https://procpa.co.kr/wp-content/uploads/2025/12/cropped-프로필사진_증명사진-변환-1.png)
+[생산적 회계사 홈페이지](https://www.procpa.co.kr)
 
-### 7. 표 (Table)
-| 제품명 | 가격 | 재고 |
-|:---:|:---:|:---:|
-| 기계식 키보드 | 150,000원 | 10개 |
-| 게이밍 마우스 | 89,000원 | 5개 |
-| 모니터 | 300,000원 | 2개 |
+#### 9️⃣ 이미지(Image)
+
+![프로필사진](https://procpa.co.kr/wp-content/uploads/2026/01/procpa_.png)
+
+#### 🔟 표(Table)
+
+| 기능 | 설명 |
+|:---:|:---|
+| 미리보기 | 실시간 확인 |
+| 복사 | HTML 변환 |
 `;
+
+// Setext Header (밑줄 헤더) 비활성화 - 오직 ATX Header (# 헤더)만 허용
+marked.use({
+  tokenizer: {
+    heading(this: any, src: string) {
+      // ATX Header Regex: #으로 시작하는 헤더만 매칭
+      const regex = /^ {0,3}(#{1,6})(?:[ \t]+(.*?))?(?:[ \t]*#*)?(?:\n|$)/;
+      const match = regex.exec(src);
+      if (match) {
+        return {
+          type: 'heading',
+          raw: match[0],
+          depth: match[1].length,
+          text: match[2]?.trim() || '',
+          tokens: this.lexer.inline(match[2]?.trim() || '')
+        };
+      }
+      // Setext Header 패턴(밑줄 헤더)이 감지되면, 해당 텍스트를 일반 문단(paragraph)으로 처리합니다.
+      // 이렇게 하면 '---' 부분이 헤더가 아닌 수평선(HR)으로 인식되도록 유도할 수 있습니다. (lexer가 남은 '---'를 다음 루프에서 처리)
+      const setextRegex = /^ {0,3}([^\n]+)\n *(=|-){2,} *(?:\n+|$)/;
+      const setextMatch = setextRegex.exec(src);
+      if (setextMatch) {
+        return {
+          type: 'paragraph',
+          raw: setextMatch[1] + '\n',
+          text: setextMatch[1]?.trim(),
+          tokens: this.lexer.inline(setextMatch[1]?.trim())
+        } as any;
+      }
+      return false;
+    }
+  }
+});
+
+marked.use({ breaks: true, gfm: true });
 
 function App() {
   const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN);
@@ -84,10 +108,9 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(true);
 
   useEffect(() => {
-    marked.setOptions({ breaks: true, gfm: true });
-
     // 연속된 빈 줄을 각각 별도 단락으로 처리 (네이버 블로그 호환성)
     let processedMarkdown = markdown;
+
     processedMarkdown = processedMarkdown.replace(/\n\n+/g, (match) => {
       const newlineCount = match.length;
       const emptyLineCount = newlineCount - 1; // 실제 빈 줄 개수
@@ -107,6 +130,7 @@ function App() {
     setNaverHtml(finalHtml);
     setPreviewHtml(finalHtml);
   }, [markdown, styleConfig]);
+
 
   const handleCopy = async () => {
     try {
@@ -137,10 +161,8 @@ function App() {
     }
   };
 
-  const handleReset = () => {
-    if (window.confirm('작성 중인 내용이 사라지고 초기 상태로 되돌아갑니다. 계속하시겠습니까?')) {
-      setMarkdown(DEFAULT_MARKDOWN);
-    }
+  const handleClear = () => {
+    setMarkdown('');
   };
 
   return (
@@ -149,9 +171,9 @@ function App() {
       <div className="w-full bg-[#16213e] border-b border-[#2a3b55] flex justify-between items-center px-6 py-3 shrink-0 z-30">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-bold bg-gradient-to-r from-[#00d2ff] to-[#3a7bd5] bg-clip-text text-transparent">
-            MD to NaverBlog Transformer
+            MarkLog
           </h1>
-          <p className="text-[11px] text-gray-500 pt-1 hidden sm:block">Designed for Naver SmartEditor 2.0</p>
+          <p className="text-[12px] text-gray-500 pt-1 hidden sm:block">네이버 블로그를 위한 마크다운 커스터마이징</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -177,19 +199,19 @@ function App() {
       {/* Main Content Area with Relative Positioning for Floating Sidebar */}
       <div className="flex-1 flex relative min-h-0 z-10 bg-slate-50 overflow-hidden">
 
-        {/* Floating Settings Sidebar */}
+        {/* Floating Settings Sidebar - Responsive: Overlay on Mobile, Push on Desktop */}
         <div
-          className={`absolute top-0 left-0 h-full w-[340px] bg-[#16213e] border-r border-[#2a3b55] shadow-2xl z-40 transition-transform duration-300 ease-in-out transform ${isSettingsOpen ? 'translate-x-0' : '-translate-x-full'
+          className={`h-full bg-[#16213e] border-[#2a3b55] shadow-2xl z-40 transition-[width,opacity] duration-300 ease-in-out overflow-hidden flex-shrink-0 absolute md:relative top-0 left-0 ${isSettingsOpen ? 'w-[340px] opacity-100 border-r' : 'w-0 opacity-0 border-r-0'
             }`}
         >
-          <div className="h-full overflow-y-auto custom-scrollbar">
+          <div className="h-full w-[340px] overflow-y-auto custom-scrollbar">
             <StyleEditor config={styleConfig} onChange={setStyleConfig} />
           </div>
         </div>
 
         {/* Main Editor Environment */}
         <div className="flex-1 flex flex-col h-full min-w-0 transition-all duration-300">
-          <div className="flex-1 flex overflow-hidden p-6 gap-6 min-h-0">
+          <div className="flex-1 flex flex-col md:flex-row overflow-hidden p-4 md:p-6 gap-4 md:gap-6 min-h-0">
             {/* Markdown Input Container */}
             <div className="flex-1 flex flex-col min-w-0 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
               <div className="h-14 border-b border-slate-200 bg-slate-100 flex justify-between items-center px-5 shrink-0">
@@ -200,11 +222,11 @@ function App() {
                   Markdown Input
                 </span>
                 <button
-                  onClick={handleReset}
+                  onClick={handleClear}
                   className="text-xs px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-600 rounded-md transition-colors font-medium"
-                  title="초기 상태로 되돌리기"
+                  title="모든 텍스트 지우기"
                 >
-                  초기화
+                  지우기
                 </button>
               </div>
               <textarea
@@ -223,7 +245,7 @@ function App() {
             </div>
 
             {/* PREVIEW Container */}
-            <div className="flex-1 flex flex-col min-w-[400px] bg-white text-black rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 md:min-w-[400px] bg-white text-black rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
               <div className="h-14 border-b border-slate-200 bg-slate-100 flex justify-between items-center px-5 shrink-0">
                 <span className="text-base font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-green-500">
@@ -265,6 +287,19 @@ function App() {
               </div>
             </div>
           </div>
+
+          <footer className="shrink-0 py-4 text-center text-sm text-gray-500 bg-slate-50 border-t border-slate-200">
+            Powered by MarkLog | Developed by {' '}
+            <a
+              href="https://procpa.co.kr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold text-blue-500 hover:text-blue-600 hover:underline transition-colors"
+            >
+              PROCPA
+            </a>
+          </footer>
+
         </div>
 
         {/* Help Modal */}
@@ -287,14 +322,14 @@ function App() {
                   <span className="w-6 h-6 rounded-full bg-[#3b82f6] text-[#1e293b] flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">2</span>
                   <div>
                     <strong className="text-white block mb-1">스타일 커스텀 (Customizing)</strong>
-                    <p className="text-gray-400">왼쪽 사이드바에서 폰트, 색상, 줄간격 등을 내 취향대로 조절하세요. 실시간으로 반영됩니다.</p>
+                    <p className="text-gray-400">왼쪽 상단 '설정 열기' 버튼을 눌러 폰트, 색상, 줄간격 등을 조절하세요. 색상 변경 시 '초기화(↺)' 버튼으로 쉽게 되돌릴 수 있습니다.</p>
                   </div>
                 </div>
                 <div className="flex gap-4 mb-6">
                   <span className="w-6 h-6 rounded-full bg-[#3b82f6] text-[#1e293b] flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">3</span>
                   <div>
                     <strong className="text-white block mb-1">복사 및 붙여넣기 (Copy & Paste)</strong>
-                    <p className="text-gray-400">설정이 끝나면 하단의 'HTML 복사하기' 버튼을 누르고, 네이버 블로그 글쓰기 에디터에 그대로 붙여넣기(Ctrl+V) 하세요.</p>
+                    <p className="text-gray-400">설정이 끝나면 우측 미리보기 상단의 'HTML 복사' 버튼을 누르고, 네이버 블로그 글쓰기 에디터에 그대로 붙여넣기(Ctrl+V) 하세요.</p>
                   </div>
                 </div>
               </div>
