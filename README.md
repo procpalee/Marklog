@@ -1,5 +1,7 @@
 # Marklog (Markdown for NaverBlog)
 
+![Marklog Banner](public/marklog_banner.png)
+
 **네이버 블로그를 위한 마크다운 커스터마이징 변환 도구입니다.**  
 대부분의 마크다운 문법을 지원하며, 네이버 블로그 스마트에디터에 최적화된 HTML 스타일로 변환해줍니다.
 
