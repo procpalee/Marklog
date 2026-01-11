@@ -18,7 +18,7 @@ export interface StyleConfig {
     content: {
         blockquote: { bg: string; border: string; color: string };
         inlineCode: { bg: string; color: string };
-        table: { headerBg: string; borderColor: string };
+        table: { headerBg: string; borderColor: string; headerAlign: 'left' | 'center' | 'right'; bodyAlign: 'left' | 'center' | 'right' };
         link: { color: string };
         highlight: { bg: string; color: string };
         paragraph: { color: string; fontSize: string };
@@ -41,9 +41,9 @@ export const defaultStyleConfig: StyleConfig = {
         h5: { color: '#000000', fontSize: '16px', fontWeight: 'bold' },
     },
     content: {
-        blockquote: { bg: '#f6f8fa', border: '#dc3545', color: '#24292e' },
-        inlineCode: { bg: '#f4f4f4', color: '#eb5757' },
-        table: { headerBg: '#f6f8fa', borderColor: '#ddd' },
+        blockquote: { bg: '#f6f8fa', border: '#0366d6', color: '#24292e' },
+        inlineCode: { bg: '#f4f4f4', color: '#000000' },
+        table: { headerBg: '#f6f8fa', borderColor: '#ddd', headerAlign: 'left', bodyAlign: 'left' },
         link: { color: '#0366d6' },
         highlight: { bg: '#fff8b2', color: '' },
         paragraph: { color: '#000000', fontSize: '15px' },
@@ -100,7 +100,7 @@ export const convertToNaverHtml = (html: string, styleConfig: StyleConfig = defa
                 break;
             case 'code':
                 if (element.parentElement?.tagName !== 'PRE') {
-                    element.setAttribute('style', `background-color: ${styleConfig.content.inlineCode.bg}; color: ${styleConfig.content.inlineCode.color}; padding: 2px 6px; border-radius: 3px; font-family: "Courier New", monospace; font-size: 0.9em;`);
+                    element.setAttribute('style', `background-color: ${styleConfig.content.inlineCode.bg}; color: ${styleConfig.content.inlineCode.color}; padding: 2px 6px; border-radius: 3px; font-family: "NanumGothic", sans-serif; font-size: 13px;`);
                 }
                 break;
             case 'mark':
@@ -164,10 +164,10 @@ export const convertToNaverHtml = (html: string, styleConfig: StyleConfig = defa
                 element.setAttribute('style', `background-color: ${styleConfig.content.table.headerBg};`);
                 break;
             case 'th':
-                element.setAttribute('style', `border: 1px solid ${styleConfig.content.table.borderColor}; padding: 10px 12px; font-weight: bold; text-align: left; background-color: ${styleConfig.content.table.headerBg};`);
+                element.setAttribute('style', `border: 1px solid ${styleConfig.content.table.borderColor}; padding: 10px 12px; font-weight: bold; text-align: ${styleConfig.content.table.headerAlign}; background-color: ${styleConfig.content.table.headerBg};`);
                 break;
             case 'td':
-                element.setAttribute('style', `border: 1px solid ${styleConfig.content.table.borderColor}; padding: 10px 12px;`);
+                element.setAttribute('style', `border: 1px solid ${styleConfig.content.table.borderColor}; padding: 10px 12px; text-align: ${styleConfig.content.table.bodyAlign};`);
                 break;
             case 'img':
                 element.setAttribute('style', 'max-width: 100%; height: auto; display: block; margin: 1.5em auto;');
@@ -352,7 +352,7 @@ export const convertToNaverHtml = (html: string, styleConfig: StyleConfig = defa
         // 결과물 생성 (네이버 블로그 스타일의 테이블 구조로 변경 - 언어 표시 헤더 추가)
         const table = doc.createElement('table');
         table.setAttribute('style',
-            `border-collapse: separate; border-spacing: 0; width: 100%; margin: 1.5em 0; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; background-color: #f6f8fa; font-family: Consolas, Monaco, "Courier New", monospace;`
+            `border-collapse: separate; border-spacing: 0; width: 100%; margin: 1.5em 0; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; background-color: #f6f8fa; font-family: "NanumGothic", sans-serif;`
         );
 
         // 1. 언어 헤더 행
@@ -363,7 +363,7 @@ export const convertToNaverHtml = (html: string, styleConfig: StyleConfig = defa
 
         headerCell.textContent = langDisplay;
         headerCell.setAttribute('style',
-            `background-color: #f1f3f5; padding: 6px 12px; font-weight: bold; font-family: "NanumSquare", sans-serif; font-size: 0.85em; color: #666; border-bottom: 1px solid #ddd; text-align: left;`
+            `background-color: #f1f3f5; padding: 6px 12px; font-weight: bold; font-family: "NanumGothic", sans-serif; font-size: 0.85em; color: #666; border-bottom: 1px solid #ddd; text-align: left;`
         );
         headerRow.appendChild(headerCell);
         table.appendChild(headerRow);
@@ -376,7 +376,7 @@ export const convertToNaverHtml = (html: string, styleConfig: StyleConfig = defa
         // 스크롤 가능한 래퍼
         const scrollWrapper = doc.createElement('div');
         scrollWrapper.setAttribute('style',
-            `padding: 16px; overflow-x: auto; white-space: nowrap; font-size: 0.9em; line-height: 1.5; color: #24292e;`
+            `padding: 16px; overflow-x: auto; white-space: nowrap; font-size: 13px; line-height: 1.5; color: #24292e;`
         );
 
         // \n을 <br>로 치환하여 복사 시 줄바꿈 유지

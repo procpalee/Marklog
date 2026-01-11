@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleConfig, defaultStyleConfig } from '../utils/styleConverter';
+import { getAllPresets, saveUserPreset, deleteUserPreset, Preset } from '../utils/stylePresets';
 
 interface StyleEditorProps {
     config: StyleConfig;
@@ -117,6 +118,13 @@ const Row = ({ children, className = '' }: { children: React.ReactNode, classNam
 // --- Main Component ---
 
 const StyleEditor: React.FC<StyleEditorProps> = ({ config, onChange }) => {
+    const [presets, setPresets] = useState<Preset[]>([]);
+    const [selectedPresetName, setSelectedPresetName] = useState<string>('기본 (Default)');
+
+    useEffect(() => {
+        setPresets(getAllPresets());
+    }, []);
+
     const handleChange = (section: keyof StyleConfig, key: string, value: any) => {
         onChange({
             ...config,
@@ -125,6 +133,7 @@ const StyleEditor: React.FC<StyleEditorProps> = ({ config, onChange }) => {
                 [key]: value,
             },
         });
+        setSelectedPresetName(''); // Custom change -> no preset selected
     };
 
     const handleDeepChange = (section: keyof StyleConfig, subSection: string, key: string, value: string) => {
@@ -138,10 +147,77 @@ const StyleEditor: React.FC<StyleEditorProps> = ({ config, onChange }) => {
                 }
             }
         });
+        setSelectedPresetName(''); // Custom change -> no preset selected
     };
+
+    const handlePresetChange = (name: string) => {
+        const preset = presets.find(p => p.name === name);
+        if (preset) {
+            onChange(preset.config);
+            setSelectedPresetName(name);
+        }
+    };
+
+    const handleSavePreset = () => {
+        const name = prompt('프리셋 이름을 입력하세요:');
+        if (name) {
+            saveUserPreset(name, config);
+            setPresets(getAllPresets());
+            setSelectedPresetName(name);
+        }
+    };
+
+    const handleDeletePreset = () => {
+        if (confirm(`'${selectedPresetName}' 프리셋을 삭제하시겠습니까?`)) {
+            deleteUserPreset(selectedPresetName);
+            const all = getAllPresets();
+            setPresets(all);
+            // Default select first one or reset
+            if (all.length > 0) {
+                handlePresetChange(all[0].name);
+            }
+        }
+    };
+
+    const currentPreset = presets.find(p => p.name === selectedPresetName);
 
     return (
         <div className="flex flex-col p-5 gap-8">
+            {/* 0. 프리셋 관리 */}
+            <div>
+                <SectionHeader title="스타일 프리셋" />
+                <div className="flex gap-2">
+                    <StyledSelect
+                        value={selectedPresetName}
+                        onChange={(e) => handlePresetChange(e.target.value)}
+                        className="flex-1"
+                    >
+                        <option value="" disabled>사용자 설정 (Custom)</option>
+                        {presets.map(p => (
+                            <option key={p.name} value={p.name}>
+                                {p.name} {p.isBuiltIn ? '' : '(사용자)'}
+                            </option>
+                        ))}
+                    </StyledSelect>
+
+                    <button
+                        onClick={handleSavePreset}
+                        className="px-3 py-1.5 bg-[#3b82f6]/20 text-[#60a5fa] text-[13px] font-bold rounded-md border border-[#3b82f6]/50 hover:bg-[#3b82f6]/30 transition-colors whitespace-nowrap"
+                    >
+                        저장
+                    </button>
+
+                    {currentPreset && !currentPreset.isBuiltIn && (
+                        <button
+                            onClick={handleDeletePreset}
+                            className="px-3 py-1.5 bg-red-500/10 text-red-400 text-[13px] font-bold rounded-md border border-red-500/30 hover:bg-red-500/20 transition-colors whitespace-nowrap"
+                        >
+                            삭제
+                        </button>
+                    )}
+                </div>
+            </div>
+
             {/* 1. 전역 스타일 */}
             <div>
                 <SectionHeader title="전역 스타일" />
@@ -387,6 +463,30 @@ const StyleEditor: React.FC<StyleEditorProps> = ({ config, onChange }) => {
                                     onChange={(val) => handleDeepChange('content', 'table', 'borderColor', val)}
                                     defaultValue={defaultStyleConfig.content.table.borderColor}
                                 />
+                            </div>
+                        </Row>
+                        <Row>
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">헤더 정렬</InputLabel>
+                                <StyledSelect
+                                    value={config.content.table.headerAlign}
+                                    onChange={(e) => handleDeepChange('content', 'table', 'headerAlign', e.target.value)}
+                                >
+                                    <option value="left">왼쪽 (Left)</option>
+                                    <option value="center">가운데 (Center)</option>
+                                    <option value="right">오른쪽 (Right)</option>
+                                </StyledSelect>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">본문 정렬</InputLabel>
+                                <StyledSelect
+                                    value={config.content.table.bodyAlign}
+                                    onChange={(e) => handleDeepChange('content', 'table', 'bodyAlign', e.target.value)}
+                                >
+                                    <option value="left">왼쪽 (Left)</option>
+                                    <option value="center">가운데 (Center)</option>
+                                    <option value="right">오른쪽 (Right)</option>
+                                </StyledSelect>
                             </div>
                         </Row>
                     </SectionCard>

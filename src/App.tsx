@@ -99,7 +99,6 @@ marked.use({ breaks: true, gfm: true });
 
 function App() {
   const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN);
-
   const [styleConfig, setStyleConfig] = useState<StyleConfig>(defaultStyleConfig);
   const [naverHtml, setNaverHtml] = useState('');
   const [previewHtml, setPreviewHtml] = useState('');
