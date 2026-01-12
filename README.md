@@ -1,4 +1,4 @@
-# Marklog (Markdown2Naver)
+# Marklog (Markdown for Naverblog)
 
 **네이버 블로그를 위한 마크다운 커스터마이징 & 변환 솔루션**
 
