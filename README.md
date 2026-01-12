@@ -38,7 +38,7 @@
 
 ## 🤝 기여 (Contribution)
 
-버그 제보나 기능 제안은 [Issues](https://procpa.co.kr/contact)를 통해 연락주세요.
+버그 제보나 기능 제안은 [Contact](https://procpa.co.kr/contact)를 통해 연락주세요.
 Pull Request는 언제나 환영합니다.
 
 ## 📄 라이선스 (License)
