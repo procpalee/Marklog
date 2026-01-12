@@ -1,95 +1,48 @@
-# Marklog (Markdown for NaverBlog)
+# Marklog (Markdown2Naver)
 
-![Marklog Banner](public/marklog_banner.png)
+**네이버 블로그를 위한 마크다운 커스터마이징 & 변환 솔루션**
 
-**네이버 블로그를 위한 마크다운 커스터마이징 변환 도구입니다.**  
-대부분의 마크다운 문법을 지원하며, 네이버 블로그 스마트에디터에 최적화된 HTML 스타일로 변환해줍니다.
+![Marklog Banner](https://marklog.procpa.co.kr/marklog_banner.png)
 
-🔗 **서비스 바로가기**: [https://marklog.procpa.co.kr](https://marklog.procpa.co.kr)
+**Marklog**는 마크다운(Markdown)으로 작성된 문서를 네이버 블로그 스마트에디터에 완벽하게 호환되는 HTML 스타일로 변환해주는 도구입니다.
+
+마크다운의 편리함과 네이버 블로그의 디자인을 동시에 잡으세요.
 
 ---
 
-## 프로젝트 소개
+## 📂 프로젝트 구성 (Project Components)
 
-네이버 블로그는 마크다운을 공식적으로 지원하지 않아, 외부에서 작성한 글을 붙여넣으면 스타일이 깨지거나 코드가 텍스트로만 보이는 문제가 발생합니다.
+이 저장소는 두 가지 버전의 Marklog를 포함하고 있습니다.
 
-**Marklog**는 이러한 불편함을 해소하기 위해 개발되었습니다. 마크다운으로 작성한 글을 사용자가 원하는대로 **커스터마이징** 후  네이버 블로그 스타일(Inline CSS)에 맞춰 **변환**하여, 복사-붙여넣기만으로 깔끔한 포스팅이 가능하도록 돕습니다.
+### 1. [Marklog Web (웹 애플리케이션)](./web-app)
 
-## 프로젝트 구조 (Project Structure)
+설치 없이 브라우저에서 즉시 사용 가능한 웹 에디터입니다.
+*   **특징**: 실시간 미리보기, 스타일 프리셋 저장, 직관적인 UI
+*   **서비스 주소**: [https://marklog.procpa.co.kr](https://marklog.procpa.co.kr)
+*   **소스 코드**: [`web-app/`](./web-app)
 
-```bash
-Markdown2Naver/
-├── public/              # 정적 에셋 (폰트, 아이콘 등)
-├── src/
-│   ├── components/
-│   │   └── StyleEditor.tsx  # 스타일 설정 UI 컴포넌트
-│   ├── utils/
-│   │   ├── styleConverter.ts # 마크다운 → HTML 변환 로직 (Inline Style 적용)
-│   │   └── stylePresets.ts   # 스타일 프리셋 데이터 및 관리 로직
-│   ├── App.tsx          # 메인 애플리케이션 (레이아웃 및 로직 연결)
-│   ├── main.tsx         # React 진입점
-│   └── index.css        # 전역 스타일 (Tailwind CSS 설정)
-├── index.html           # HTML 진입점
-├── package.json         # 프로젝트 의존성 관리
-├── tailwind.config.js   # Tailwind CSS 설정
-└── vite.config.ts       # Vite 빌드 설정
-```
+### 2. [Marklog for Obsidian (옵시디언 플러그인)](./obsidian-plugin)
 
-## 주요 기능
+노트 앱 **Obsidian** 사용자를 위한 플러그인입니다.
+*   **특징**: 옵시디언 내에서 명령어(`Ctrl+P`) 한 번으로 변환 및 복사, 전용 설정 탭 지원
+*   **소스 코드**: [`obsidian-plugin/`](./obsidian-plugin)
 
-### 1. 강력한 마크다운 파싱
+---
 
-- **GFM (GitHub Flavored Markdown)** 문법 완벽 지원
-- **코드 하이라이팅**: `highlight.js`를 적용하여 개발 블로그에 최적화된 코드 스타일 제공
+## 🚀 주요 기능
 
-### 2. 스타일 프리셋 및 저장 (Presets & Storage)
+*   **Inline Style 변환**: 외부 CSS를 허용하지 않는 네이버 블로그를 위해 모든 스타일을 인라인으로 자동 주입
+*   **완벽한 커스터마이징**: 폰트(나눔고딕, 마루부리 등), 색상, 크기, 줄간격 상세 설정
+*   **문법 지원**: GFM(GitHub Flavored Markdown) 완벽 지원 (표, 인용구, 코드블럭 등)
+*   **코드 하이라이팅**: `highlight.js` 기반의 깔끔한 코드 블록 스타일링
 
-'클래식', '모던', '미니멀' 등 미리 정의된 테마를 제공하며, 나만의 설정을 브라우저에 **저장**하고 언제든 다시 **불러오기** 할 수 있습니다.
+## 🤝 기여 (Contribution)
 
-### 3. 스타일 설정 (Style Settings)
+버그 제보나 기능 제안은 [Issues](https://github.com/PROCPA/Markdown2Naver/issues)에 남겨주세요.
+Pull Request는 언제나 환영합니다.
 
-- **폰트 및 행간**: 네이버 블로그 호환 폰트(나눔고딕, 나눔명조 등) 및 줄간격(Line Height) 설정
-- **본문 스타일**: 본문 글자 크기 및 색상, 링크(Link) 색상 커스텀
-- **타이포그래피**: H1 ~ H5 제목의 크기와 색상을 개별적으로 상세 조정
-- **표(Table)**: 헤더/본문 배경색, 테두리 색상, 텍스트 정렬(왼쪽/가운데/오른쪽) 설정
-- **마크다운 요소**:
-    - **인용구**: 배경색, 글자색, 테두리 색상 변경
-    - **인라인 코드**: 배경색 및 글자색 커스텀
-    - **하이라이트**: 형광펜 효과 색상 지정
-    - **강조**: 굵게(Bold), 기울임(Italic) 색상 지정
+## 📄 라이선스 (License)
 
-### 4. 사용자 편의성
+이 프로젝트는 MIT 라이선스를 따릅니다. 자세한 내용은 [LICENSE](./LICENSE) 파일을 참조하세요.
 
-- **실시간 미리보기**: 좌측 입력창과 우측 미리보기 화면의 1:1 매칭
-- **반응형 디자인**: 모바일과 데스크탑 환경에 최적화된 UI 제공
-- **원클릭 복사**: 변환된 HTML 코드를 버튼 하나로 클립보드에 복사
-- **즉시 초기화**: '지우기' 버튼으로 작성 중인 내용을 빠르게 삭제
-
-## 사용 방법
-
-1. **마크다운 작성**: 왼쪽 입력창에 글을 작성합니다. (이미지 주소, 코드 블록 등 자유롭게 사용)
-2. **스타일 커스텀**: 오른쪽 상단 **[설정 열기]** 버튼을 눌러 원하는 폰트와 색상으로 디자인을 변경합니다.
-3. **미리보기 확인**: 오른쪽 미리보기 화면에서 실제 블로그에 적용될 모습을 확인합니다.
-4. **HTML 복사**: 오른쪽 상단 **[HTML 복사]** 버튼을 클릭합니다.
-5. **블로그 발행**: 네이버 블로그 글쓰기 화면으로 이동하여 **붙여넣기(Ctrl+V)** 하면 완료됩니다.
-
-## 기술적인 해결 (Troubleshooting)
-
-MarkLog는 네이버 스마트에디터의 제약 사항을 다음과 같이 해결했습니다.
-
-| 문제 현상 | 해결 방법 |
-|:---:|:---|
-| **외부 CSS 무실행** | 모든 스타일을 태그 내 `style="..."` 속성(Inline Style)으로 직접 주입 |
-| **코드 블록 깨짐** | `pre`, `code` 태그에 배경색과 폰트 스타일을 강제로 지정하여 박스 형태 유지 |
-| **줄간격 이상** | 헤더와 본문의 `line-height`를 분리하여 가독성 높은 줄간격 적용 |
-
-## 사용 기술 (Tech Stack)
-
-- **Library**: React 18, TypeScript, Vite
-- **Styling**: Tailwind CSS
-- **Core Logic**: marked (Markdown Parser), DOMPurify, highlight.js
-
-## 라이선스
-
-MIT License  
-Copyright (c) 2026 **PROCPA** (https://procpa.co.kr)
+Copyright (c) 2026 **PROCPA**.
