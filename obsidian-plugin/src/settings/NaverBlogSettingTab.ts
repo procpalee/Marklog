@@ -85,7 +85,7 @@ export class NaverBlogSettingTab extends PluginSettingTab {
             const h = header as keyof typeof defaultStyleConfig.headers;
             new Setting(containerEl)
                 .setName(`${header.toUpperCase()}`)
-                .setDesc(`${header}의 색상과 폰트 크기를 설정합니다.`)
+                .setDesc(`${header}의 스타일을 설정합니다.`)
                 .addColorPicker(color => color
                     .setValue(this.plugin.settings.headers[h].color)
                     .onChange(async (value) => {
@@ -100,7 +100,35 @@ export class NaverBlogSettingTab extends PluginSettingTab {
                             this.plugin.settings.headers[h].fontSize = value;
                             await this.plugin.saveSettings();
                         });
-                });
+                })
+                .addToggle(toggle => toggle
+                    .setTooltip('구분선 모드 (Divider line)')
+                    .setValue(this.plugin.settings.headers[h].underlined || false)
+                    .onChange(async (value) => {
+                        this.plugin.settings.headers[h].underlined = value;
+                        // Force refresh to show/hide extra settings if possible, or just let them coexist
+                        // In Obsidian API, conditional rendering usually requires re-display()
+                        this.display();
+                        await this.plugin.saveSettings();
+                    }));
+
+            if (this.plugin.settings.headers[h].underlined) {
+                new Setting(containerEl)
+                    .setName(`  └ ${header.toUpperCase()} 배경색 & 밑줄 색상`)
+                    .setDesc('구분선 모드 시 적용될 배경색과 밑줄 색상입니다.')
+                    .addColorPicker(color => color
+                        .setValue(this.plugin.settings.headers[h].backgroundColor || '#ffffff')
+                        .onChange(async (value) => {
+                            this.plugin.settings.headers[h].backgroundColor = value;
+                            await this.plugin.saveSettings();
+                        }))
+                    .addColorPicker(color => color
+                        .setValue(this.plugin.settings.headers[h].underlineColor || this.plugin.settings.headers[h].color)
+                        .onChange(async (value) => {
+                            this.plugin.settings.headers[h].underlineColor = value;
+                            await this.plugin.saveSettings();
+                        }));
+            }
         });
 
         // --- Content Settings ---
@@ -225,5 +253,26 @@ export class NaverBlogSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 }));
 
+        // Footnotes
+        containerEl.createEl('h3', { text: '각주 스타일(Footnote Styles)' });
+
+        new Setting(containerEl)
+            .setName('각주(Footnote)')
+            .setDesc('각주의 색상과 폰트 크기를 설정합니다.')
+            .addColorPicker(color => color
+                .setValue(this.plugin.settings.content.footnotes.color)
+                .onChange(async (value) => {
+                    this.plugin.settings.content.footnotes.color = value;
+                    await this.plugin.saveSettings();
+                }))
+            .addDropdown(dropdown => {
+                fontSizes.forEach(size => dropdown.addOption(`${size}px`, `${size}px`));
+                dropdown
+                    .setValue(this.plugin.settings.content.footnotes.fontSize)
+                    .onChange(async (value) => {
+                        this.plugin.settings.content.footnotes.fontSize = value;
+                        await this.plugin.saveSettings();
+                    });
+            });
     }
 }

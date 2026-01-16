@@ -55252,7 +55252,7 @@ var convertToNaverHtml = (html2, styleConfig = defaultStyleConfig) => {
           element.setAttribute("style", `margin-top: 40px; border-top: 1px solid ${styleConfig.content.footnotes.separatorColor}; padding-top: 20px; font-size: ${styleConfig.content.footnotes.fontSize}; color: ${styleConfig.content.footnotes.color}; font-family: ${styleConfig.global.fontFamily}; `);
           const footnoteItems = element.querySelectorAll("div.footnote-item");
           footnoteItems.forEach((item) => {
-            item.setAttribute("style", `margin-bottom: 16px; line-height: 1.6; font-size: 13px; color: ${styleConfig.content.footnotes.color}; white-space: pre-wrap; `);
+            item.setAttribute("style", `margin-bottom: 8px; line-height: 1.6; font-size: 13px; color: ${styleConfig.content.footnotes.color}; `);
           });
         }
         break;
@@ -55483,7 +55483,7 @@ var NaverBlogSettingTab = class extends import_obsidian.PluginSettingTab {
     containerEl.createEl("h3", { text: "\uD5E4\uB354 \uC2A4\uD0C0\uC77C(Header Styles)" });
     ["h1", "h2", "h3", "h4", "h5"].forEach((header) => {
       const h = header;
-      new import_obsidian.Setting(containerEl).setName(`${header.toUpperCase()}`).setDesc(`${header}\uC758 \uC0C9\uC0C1\uACFC \uD3F0\uD2B8 \uD06C\uAE30\uB97C \uC124\uC815\uD569\uB2C8\uB2E4.`).addColorPicker((color) => color.setValue(this.plugin.settings.headers[h].color).onChange(async (value) => {
+      new import_obsidian.Setting(containerEl).setName(`${header.toUpperCase()}`).setDesc(`${header}\uC758 \uC2A4\uD0C0\uC77C\uC744 \uC124\uC815\uD569\uB2C8\uB2E4.`).addColorPicker((color) => color.setValue(this.plugin.settings.headers[h].color).onChange(async (value) => {
         this.plugin.settings.headers[h].color = value;
         await this.plugin.saveSettings();
       })).addDropdown((dropdown) => {
@@ -55492,7 +55492,20 @@ var NaverBlogSettingTab = class extends import_obsidian.PluginSettingTab {
           this.plugin.settings.headers[h].fontSize = value;
           await this.plugin.saveSettings();
         });
-      });
+      }).addToggle((toggle) => toggle.setTooltip("\uAD6C\uBD84\uC120 \uBAA8\uB4DC (Divider line)").setValue(this.plugin.settings.headers[h].underlined || false).onChange(async (value) => {
+        this.plugin.settings.headers[h].underlined = value;
+        this.display();
+        await this.plugin.saveSettings();
+      }));
+      if (this.plugin.settings.headers[h].underlined) {
+        new import_obsidian.Setting(containerEl).setName(`  \u2514 ${header.toUpperCase()} \uBC30\uACBD\uC0C9 & \uBC11\uC904 \uC0C9\uC0C1`).setDesc("\uAD6C\uBD84\uC120 \uBAA8\uB4DC \uC2DC \uC801\uC6A9\uB420 \uBC30\uACBD\uC0C9\uACFC \uBC11\uC904 \uC0C9\uC0C1\uC785\uB2C8\uB2E4.").addColorPicker((color) => color.setValue(this.plugin.settings.headers[h].backgroundColor || "#ffffff").onChange(async (value) => {
+          this.plugin.settings.headers[h].backgroundColor = value;
+          await this.plugin.saveSettings();
+        })).addColorPicker((color) => color.setValue(this.plugin.settings.headers[h].underlineColor || this.plugin.settings.headers[h].color).onChange(async (value) => {
+          this.plugin.settings.headers[h].underlineColor = value;
+          await this.plugin.saveSettings();
+        }));
+      }
     });
     containerEl.createEl("h3", { text: "\uBCF8\uBB38 \uC2A4\uD0C0\uC77C(Content Styles)" });
     new import_obsidian.Setting(containerEl).setName("\uD558\uC774\uB77C\uC774\uD2B8(Highlight)").setDesc("\uD558\uC774\uB77C\uC774\uD2B8\uC758 \uBC30\uACBD\uC0C9\uACFC \uD14D\uC2A4\uD2B8\uC0C9\uC744 \uC124\uC815\uD569\uB2C8\uB2E4.").addColorPicker((color) => color.setValue(this.plugin.settings.content.highlight.bg).onChange(async (value) => {
@@ -55542,6 +55555,17 @@ var NaverBlogSettingTab = class extends import_obsidian.PluginSettingTab {
       this.plugin.settings.content.table.bodyAlign = value;
       await this.plugin.saveSettings();
     }));
+    containerEl.createEl("h3", { text: "\uAC01\uC8FC \uC2A4\uD0C0\uC77C(Footnote Styles)" });
+    new import_obsidian.Setting(containerEl).setName("\uAC01\uC8FC(Footnote)").setDesc("\uAC01\uC8FC\uC758 \uC0C9\uC0C1\uACFC \uD3F0\uD2B8 \uD06C\uAE30\uB97C \uC124\uC815\uD569\uB2C8\uB2E4.").addColorPicker((color) => color.setValue(this.plugin.settings.content.footnotes.color).onChange(async (value) => {
+      this.plugin.settings.content.footnotes.color = value;
+      await this.plugin.saveSettings();
+    })).addDropdown((dropdown) => {
+      fontSizes.forEach((size) => dropdown.addOption(`${size}px`, `${size}px`));
+      dropdown.setValue(this.plugin.settings.content.footnotes.fontSize).onChange(async (value) => {
+        this.plugin.settings.content.footnotes.fontSize = value;
+        await this.plugin.saveSettings();
+      });
+    });
   }
 };
 
@@ -55650,14 +55674,14 @@ var MarklogPlugin = class extends import_obsidian2.Plugin {
         return (_a = src.match(/^\[\^([^\]]+)\]:\s+/)) == null ? void 0 : _a.index;
       },
       tokenizer(src) {
-        const rule = /^\[\^([^\]]+)\]:\s+([\s\S]*?(?=\n\[\^|$))/;
+        const rule = /^\[\^([^\]]+)\]:\s+(.*(?:[\r\n]+(?!\[\^).*)*)/;
         const match = rule.exec(src);
         if (match) {
           return {
             type: "footnoteDef",
             raw: match[0],
             id: match[1],
-            text: match[2].trim()
+            text: match[2].trim().split(/[\r\n]+/).join("<br>")
           };
         }
       },
@@ -55666,14 +55690,14 @@ var MarklogPlugin = class extends import_obsidian2.Plugin {
         return "";
       }
     };
-    marked.use({ extensions: [footnoteRefExtension, footnoteDefExtension], breaks: true, gfm: true });
+    marked.use({ extensions: [footnoteRefExtension, footnoteDefExtension] });
     try {
       const rawHtml = marked.parse(markdown, { async: false });
       let htmlWithFootnotes = rawHtml;
       if (footnotes.size > 0) {
         htmlWithFootnotes += '<div class="footnotes">';
         footnotes.forEach((text2, id) => {
-          const parsedText = marked.parseInline(text2.replace(/\n/g, "<br>\n"), { breaks: false });
+          const parsedText = marked.parseInline(text2);
           htmlWithFootnotes += `<div class="footnote-item" id="fn-${id}">[${id}] ${parsedText}</div>`;
         });
         htmlWithFootnotes += "</div>";
