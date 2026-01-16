@@ -130,14 +130,14 @@ export default class MarklogPlugin extends Plugin {
             level: 'block',
             start(src: string) { return src.match(/^\[\^([^\]]+)\]:\s+/)?.index; },
             tokenizer(src: string) {
-                const rule = /^\[\^([^\]]+)\]:\s+(.*(?:\n(?!\[\^).+)*)/;
+                const rule = /^\[\^([^\]]+)\]:\s+(.*(?:[\r\n]+(?!\[\^).*)*)/;
                 const match = rule.exec(src);
                 if (match) {
                     return {
                         type: 'footnoteDef',
                         raw: match[0],
                         id: match[1],
-                        text: match[2].trim()
+                        text: match[2].trim().split(/[\r\n]+/).join('<br>')
                     };
                 }
             },
