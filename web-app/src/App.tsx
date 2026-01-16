@@ -60,6 +60,12 @@ console.log("Hello, MarkLog!");
 |:---:|:---|
 | 미리보기 | 실시간 확인 |
 | 복사 | HTML 변환 |
+
+#### 1️⃣1️⃣ 각주(Footnote)
+
+각주 예시입니다[^1].
+
+[^1]: 각주에 대한 설명입니다.
 `;
 
 // Setext Header (밑줄 헤더) 비활성화 - 오직 ATX Header (# 헤더)만 허용
@@ -120,10 +126,73 @@ function App() {
     // ==하이라이트== 문법 지원
     processedMarkdown = processedMarkdown.replace(/==(.+?)==/g, '<mark>$1</mark>');
 
+
+    // Footnote storage
+    const footnotes = new Map<string, string>();
+
+    // Custom Extension for Footnotes
+    const footnoteRefExtension = {
+      name: 'footnoteRef',
+      level: 'inline',
+      start(src: string) { return src.match(/\[\^([^\]]+)\]/)?.index; },
+      tokenizer(src: string) {
+        const rule = /^\[\^([^\]]+)\]/;
+        const match = rule.exec(src);
+        if (match) {
+          return {
+            type: 'footnoteRef',
+            raw: match[0],
+            id: match[1]
+          };
+        }
+      },
+      renderer(token: any) {
+        return `<sup>[${token.id}]</sup>`;
+      }
+    };
+
+    const footnoteDefExtension = {
+      name: 'footnoteDef',
+      level: 'block',
+      start(src: string) { return src.match(/^\[\^([^\]]+)\]:\s+/)?.index; },
+      tokenizer(src: string) {
+        const rule = /^\[\^([^\]]+)\]:\s+(.*(?:\n(?!\[\^).+)*)/;
+        const match = rule.exec(src);
+        if (match) {
+          return {
+            type: 'footnoteDef',
+            raw: match[0],
+            id: match[1],
+            text: match[2].trim()
+          };
+        }
+      },
+      renderer(token: any) {
+        // Store definition but don't render it in place
+        footnotes.set(token.id, token.text);
+        return '';
+      }
+    };
+
+    marked.use({ extensions: [footnoteRefExtension, footnoteDefExtension] as any });
+
     const rawHtml = marked.parse(processedMarkdown, { async: false }) as string;
-    const sanitized = DOMPurify.sanitize(rawHtml, {
+
+    // Append Footnotes if any exist
+    let htmlWithFootnotes = rawHtml;
+    if (footnotes.size > 0) {
+      htmlWithFootnotes += '<div class="footnotes">';
+      footnotes.forEach((text, id) => {
+        // Process text inside footnote (allow inline markdown)
+        const parsedText = marked.parseInline(text);
+        htmlWithFootnotes += `<div class="footnote-item" id="fn-${id}">[${id}] ${parsedText}</div>`;
+      });
+      htmlWithFootnotes += '</div>';
+    }
+
+    const sanitized = DOMPurify.sanitize(htmlWithFootnotes, {
       ADD_TAGS: ['iframe'],
-      ADD_ATTR: ['class', 'style', 'target'],
+      ADD_ATTR: ['class', 'style', 'target', 'id'],
     });
     const finalHtml = convertToNaverHtml(sanitized, styleConfig);
     setNaverHtml(finalHtml);

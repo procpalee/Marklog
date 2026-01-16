@@ -120,6 +120,8 @@ const Row = ({ children, className = '' }: { children: React.ReactNode, classNam
 const StyleEditor: React.FC<StyleEditorProps> = ({ config, onChange }) => {
     const [presets, setPresets] = useState<Preset[]>([]);
     const [selectedPresetName, setSelectedPresetName] = useState<string>('기본 (Default)');
+    // Track which preset was originally selected to allow overwriting
+    const [editingPresetName, setEditingPresetName] = useState<string>('기본 (Default)');
 
     useEffect(() => {
         setPresets(getAllPresets());
@@ -155,15 +157,42 @@ const StyleEditor: React.FC<StyleEditorProps> = ({ config, onChange }) => {
         if (preset) {
             onChange(preset.config);
             setSelectedPresetName(name);
+            setEditingPresetName(name);
         }
     };
 
     const handleSavePreset = () => {
-        const name = prompt('프리셋 이름을 입력하세요:');
+        // 1. Check if we can overwrite the currently editing preset
+        const originPreset = presets.find(p => p.name === editingPresetName);
+
+        if (originPreset && !originPreset.isBuiltIn) {
+            // It's a user preset, ask to overwrite
+            if (confirm(`'${editingPresetName}' 설정을 덮어쓰시겠습니까?\n(취소를 누르면 새 이름으로 저장합니다)`)) {
+                saveUserPreset(editingPresetName, config);
+                setPresets(getAllPresets());
+                // Keep selected
+                setSelectedPresetName(editingPresetName);
+                return;
+            }
+        }
+
+        // 2. Save as new
+        const name = prompt('새 프리셋 이름을 입력하세요:');
         if (name) {
+            // Check for duplicate name if user types manually
+            const existing = presets.find(p => p.name === name);
+            if (existing && existing.isBuiltIn) {
+                alert('내장 프리셋 이름으로는 저장할 수 없습니다.');
+                return;
+            }
+            if (existing && !confirm(`'${name}' 이미 존재하는 프리셋입니다. 덮어쓰시겠습니까?`)) {
+                return;
+            }
+
             saveUserPreset(name, config);
             setPresets(getAllPresets());
             setSelectedPresetName(name);
+            setEditingPresetName(name);
         }
     };
 
@@ -328,6 +357,31 @@ const StyleEditor: React.FC<StyleEditorProps> = ({ config, onChange }) => {
                                         </StyledSelect>
                                     </div>
                                 </Row>
+                                <div className="mt-3 pt-3 border-t border-gray-700/50 flex flex-col gap-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[13px] text-gray-400">구분선</span>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={!!config.headers[level].underlined}
+                                                onChange={(e) => handleDeepChange('headers', level, 'underlined', e.target.checked as any)}
+                                                className="sr-only peer"
+                                            />
+                                            <div className="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                                        </label>
+                                    </div>
+
+                                    {config.headers[level].underlined && (
+                                        <div className="flex-1 min-w-0">
+                                            <InputLabel className="mb-1 block">배경색</InputLabel>
+                                            <ColorInput
+                                                value={config.headers[level].backgroundColor || '#ffffff'}
+                                                onChange={(val) => handleDeepChange('headers', level, 'backgroundColor', val)}
+                                                defaultValue="#ffffff"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
                             </SectionCard>
                         );
                     })}
@@ -487,6 +541,21 @@ const StyleEditor: React.FC<StyleEditorProps> = ({ config, onChange }) => {
                                     <option value="center">가운데 (Center)</option>
                                     <option value="right">오른쪽 (Right)</option>
                                 </StyledSelect>
+                            </div>
+                        </Row>
+                    </SectionCard>
+
+                    {/* 6) 각주 */}
+                    <SectionCard>
+                        <SubSectionHeader title="각주 (Footnotes)" />
+                        <Row>
+                            <div className="flex-1 min-w-0">
+                                <InputLabel className="mb-1 block">글자색</InputLabel>
+                                <ColorInput
+                                    value={config.content.footnotes.color}
+                                    onChange={(val) => handleDeepChange('content', 'footnotes', 'color', val)}
+                                    defaultValue={defaultStyleConfig.content.footnotes.color}
+                                />
                             </div>
                         </Row>
                     </SectionCard>

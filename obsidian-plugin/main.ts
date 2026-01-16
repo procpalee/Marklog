@@ -101,14 +101,75 @@ export default class MarklogPlugin extends Plugin {
         // 2. Highlight syntax (==text==)
         markdown = markdown.replace(/==(.+?)==/g, '<mark>$1</mark>');
 
+        // Footnote storage
+        const footnotes = new Map<string, string>();
+
+        // Custom Extension for Footnotes
+        const footnoteRefExtension = {
+            name: 'footnoteRef',
+            level: 'inline',
+            start(src: string) { return src.match(/\[\^([^\]]+)\]/)?.index; },
+            tokenizer(src: string) {
+                const rule = /^\[\^([^\]]+)\]/;
+                const match = rule.exec(src);
+                if (match) {
+                    return {
+                        type: 'footnoteRef',
+                        raw: match[0],
+                        id: match[1]
+                    };
+                }
+            },
+            renderer(token: any) {
+                return `<sup>[${token.id}]</sup>`;
+            }
+        };
+
+        const footnoteDefExtension = {
+            name: 'footnoteDef',
+            level: 'block',
+            start(src: string) { return src.match(/^\[\^([^\]]+)\]:\s+/)?.index; },
+            tokenizer(src: string) {
+                const rule = /^\[\^([^\]]+)\]:\s+(.*(?:\n(?!\[\^).+)*)/;
+                const match = rule.exec(src);
+                if (match) {
+                    return {
+                        type: 'footnoteDef',
+                        raw: match[0],
+                        id: match[1],
+                        text: match[2].trim()
+                    };
+                }
+            },
+            renderer(token: any) {
+                // Store definition but don't render it in place
+                footnotes.set(token.id, token.text);
+                return '';
+            }
+        };
+
+        marked.use({ extensions: [footnoteRefExtension, footnoteDefExtension] as any });
+
         // Convert to HTML
         try {
             const rawHtml = marked.parse(markdown, { async: false }) as string;
 
+            // Append Footnotes if any exist
+            let htmlWithFootnotes = rawHtml;
+            if (footnotes.size > 0) {
+                htmlWithFootnotes += '<div class="footnotes">';
+                footnotes.forEach((text, id) => {
+                    // Process text inside footnote (allow inline markdown)
+                    const parsedText = marked.parseInline(text);
+                    htmlWithFootnotes += `<div class="footnote-item" id="fn-${id}">[${id}] ${parsedText}</div>`;
+                });
+                htmlWithFootnotes += '</div>';
+            }
+
             // Sanitize
-            const sanitized = DOMPurify.sanitize(rawHtml, {
+            const sanitized = DOMPurify.sanitize(htmlWithFootnotes, {
                 ADD_TAGS: ['iframe'],
-                ADD_ATTR: ['class', 'style', 'target'],
+                ADD_ATTR: ['class', 'style', 'target', 'id'],
             });
 
             // Apply Naver Styles

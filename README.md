@@ -36,6 +36,15 @@
 * 문법 지원: GFM(GitHub Flavored Markdown) 완벽 지원 (표, 인용구, 코드블럭 등)
 * 코드 하이라이팅: `highlight.js` 기반의 깔끔한 코드 블록 스타일링
 
+## 🆕 v1.1 업데이트 (2026-01-16)
+
+* **각주 스타일(Footnotes)**:
+    * 글자색 커스터마이징 지원
+    * UI 간소화 및 구분선 스타일 자동 최적화
+* **헤더 스타일(Headers)**:
+    * **'구분선(Divider line)'** 옵션 추가: 헤더를 깔끔한 구분선 디자인(Table)으로 자동 변환
+    * 구분선 모드 시 **배경색(Background Color)** 설정 지원
+
 ## 🤝 기여 (Contribution)
 
 버그 제보나 기능 제안은 [Contact](https://procpa.co.kr/contact)를 통해 연락주세요.

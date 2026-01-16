@@ -55150,11 +55150,11 @@ var defaultStyleConfig = {
     // 본문 기본값
   },
   headers: {
-    h1: { color: "#000000", fontSize: "34px", fontWeight: "bold" },
-    h2: { color: "#000000", fontSize: "28px", fontWeight: "bold" },
-    h3: { color: "#000000", fontSize: "24px", fontWeight: "bold" },
-    h4: { color: "#000000", fontSize: "19px", fontWeight: "bold" },
-    h5: { color: "#000000", fontSize: "16px", fontWeight: "bold" }
+    h1: { color: "#000000", fontSize: "34px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff" },
+    h2: { color: "#000000", fontSize: "28px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff" },
+    h3: { color: "#000000", fontSize: "24px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff" },
+    h4: { color: "#000000", fontSize: "19px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff" },
+    h5: { color: "#000000", fontSize: "16px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff" }
   },
   content: {
     blockquote: { bg: "#f6f8fa", border: "#0366d6", color: "#24292e" },
@@ -55164,53 +55164,66 @@ var defaultStyleConfig = {
     highlight: { bg: "#fff8b2", color: "" },
     paragraph: { color: "#000000", fontSize: "15px" },
     bold: { color: "" },
-    italic: { color: "" }
+    italic: { color: "" },
+    footnotes: { separatorColor: "#dbdbdb", fontSize: "13px", color: "#333333" }
   }
 };
 var convertToNaverHtml = (html2, styleConfig = defaultStyleConfig) => {
   const parser2 = new DOMParser();
   const doc = parser2.parseFromString(html2, "text/html");
   const applyStyles = (element) => {
-    var _a, _b;
+    var _a, _b, _c;
     const tagName = element.tagName.toLowerCase();
     switch (tagName) {
       case "h1":
-        element.setAttribute("style", `font-size: ${styleConfig.headers.h1.fontSize}; font-weight: ${styleConfig.headers.h1.fontWeight}; color: ${styleConfig.headers.h1.color}; margin: 0; line-height: ${styleConfig.global.headerLineHeight}; font-family: ${styleConfig.global.fontFamily};`);
-        break;
       case "h2":
-        element.setAttribute("style", `font-size: ${styleConfig.headers.h2.fontSize}; font-weight: ${styleConfig.headers.h2.fontWeight}; color: ${styleConfig.headers.h2.color}; margin: 0; line-height: ${styleConfig.global.headerLineHeight}; font-family: ${styleConfig.global.fontFamily};`);
-        break;
       case "h3":
-        element.setAttribute("style", `font-size: ${styleConfig.headers.h3.fontSize}; font-weight: ${styleConfig.headers.h3.fontWeight}; color: ${styleConfig.headers.h3.color}; margin: 0; line-height: ${styleConfig.global.headerLineHeight}; font-family: ${styleConfig.global.fontFamily};`);
-        break;
       case "h4":
-        element.setAttribute("style", `font-size: ${styleConfig.headers.h4.fontSize}; font-weight: ${styleConfig.headers.h4.fontWeight}; color: ${styleConfig.headers.h4.color}; margin: 0; line-height: ${styleConfig.global.headerLineHeight}; font-family: ${styleConfig.global.fontFamily};`);
-        break;
       case "h5":
-        element.setAttribute("style", `font-size: ${styleConfig.headers.h5.fontSize}; font-weight: ${styleConfig.headers.h5.fontWeight}; color: ${styleConfig.headers.h5.color}; margin: 0; line-height: ${styleConfig.global.headerLineHeight}; font-family: ${styleConfig.global.fontFamily};`);
+        {
+          const level = tagName;
+          const hConfig = styleConfig.headers[level];
+          if (hConfig.underlined) {
+            const table = document.createElement("table");
+            const bgColor = hConfig.backgroundColor || "#ffffff";
+            table.setAttribute("style", `width: 100%; border-bottom: 2px solid ${hConfig.color}; background-color: ${bgColor}; border-collapse: collapse; margin-block-start: 0.83em; margin-block-end: 0.83em;`);
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.setAttribute("style", `padding: 5px 0 10px 0; color: ${hConfig.color}; font-size: ${hConfig.fontSize}; font-weight: ${hConfig.fontWeight}; font-family: ${styleConfig.global.fontFamily}; line-height: ${styleConfig.global.headerLineHeight}; border: none;`);
+            td.innerHTML = element.innerHTML;
+            tr.appendChild(td);
+            table.appendChild(tr);
+            (_a = element.parentNode) == null ? void 0 : _a.replaceChild(table, element);
+          } else {
+            element.setAttribute("style", `font-size: ${hConfig.fontSize}; font-weight: ${hConfig.fontWeight}; color: ${hConfig.color}; margin: 0; line-height: ${styleConfig.global.headerLineHeight}; font-family: ${styleConfig.global.fontFamily}; `);
+          }
+        }
+        break;
+      case "sup":
+        element.setAttribute("style", `font-size: 0.8em; vertical-align: super; line-height: 0; font-family: ${styleConfig.global.fontFamily}; `);
         break;
       case "p":
         const isInsideBlockquote = element.closest("blockquote");
         const pColor = isInsideBlockquote ? "inherit" : styleConfig.content.paragraph.color;
-        element.setAttribute("style", `line-height: ${styleConfig.global.contentLineHeight}; margin: 0; font-family: ${styleConfig.global.fontFamily}; color: ${pColor}; font-size: ${styleConfig.content.paragraph.fontSize};`);
+        element.setAttribute("style", `line-height: ${styleConfig.global.contentLineHeight}; margin: 0; font-family: ${styleConfig.global.fontFamily}; color: ${pColor}; font-size: ${styleConfig.content.paragraph.fontSize}; `);
         break;
       case "strong":
       case "b":
         {
-          const boldColor = styleConfig.content.bold.color ? `color: ${styleConfig.content.bold.color};` : "";
+          const boldColor = styleConfig.content.bold.color ? `color: ${styleConfig.content.bold.color}; ` : "";
           element.setAttribute("style", `font-weight: bold; line-height: ${styleConfig.global.contentLineHeight}; font-family: ${styleConfig.global.fontFamily}; ${boldColor}`);
         }
         break;
       case "em":
       case "i":
         {
-          const italicColor = styleConfig.content.italic.color ? `color: ${styleConfig.content.italic.color};` : "";
+          const italicColor = styleConfig.content.italic.color ? `color: ${styleConfig.content.italic.color}; ` : "";
           element.setAttribute("style", `font-style: italic; line-height: ${styleConfig.global.contentLineHeight}; font-family: ${styleConfig.global.fontFamily}; ${italicColor}`);
         }
         break;
       case "code":
-        if (((_a = element.parentElement) == null ? void 0 : _a.tagName) !== "PRE") {
-          element.setAttribute("style", `background-color: ${styleConfig.content.inlineCode.bg}; color: ${styleConfig.content.inlineCode.color}; padding: 2px 6px; border-radius: 3px; font-family: "NanumGothic", sans-serif; font-size: 13px;`);
+        if (((_b = element.parentElement) == null ? void 0 : _b.tagName) !== "PRE") {
+          element.setAttribute("style", `background-color: ${styleConfig.content.inlineCode.bg}; color: ${styleConfig.content.inlineCode.color}; padding: 2px 6px; border-radius: 3px; font-family: "NanumGothic", sans-serif; font-size: 13px; `);
         }
         break;
       case "mark":
@@ -55228,37 +55241,46 @@ var convertToNaverHtml = (html2, styleConfig = defaultStyleConfig) => {
         innerMark.style.backgroundColor = "transparent";
         innerMark.style.color = "inherit";
         wrapperSpan.appendChild(innerMark);
-        (_b = element.parentNode) == null ? void 0 : _b.replaceChild(wrapperSpan, element);
+        (_c = element.parentNode) == null ? void 0 : _c.replaceChild(wrapperSpan, element);
         break;
       case "blockquote":
-        element.setAttribute("style", `border-left: 4px solid ${styleConfig.content.blockquote.border}; padding: 1em 1.5em; background-color: ${styleConfig.content.blockquote.bg}; color: ${styleConfig.content.blockquote.color}; border-radius: 4px; margin: 0; line-height: ${styleConfig.global.contentLineHeight}; font-family: ${styleConfig.global.fontFamily};`);
+        element.setAttribute("style", `border-left: 4px solid ${styleConfig.content.blockquote.border}; padding: 1em 1.5em; background-color: ${styleConfig.content.blockquote.bg}; color: ${styleConfig.content.blockquote.color}; border-radius: 4px; margin: 0; line-height: ${styleConfig.global.contentLineHeight}; font-family: ${styleConfig.global.fontFamily}; `);
+        break;
+      case "div":
+        if (element.classList.contains("footnotes")) {
+          element.setAttribute("style", `margin-top: 40px; border-top: 1px solid ${styleConfig.content.footnotes.separatorColor}; padding-top: 20px; font-size: ${styleConfig.content.footnotes.fontSize}; color: ${styleConfig.content.footnotes.color}; font-family: ${styleConfig.global.fontFamily}; `);
+          const footnoteItems = element.querySelectorAll("div.footnote-item");
+          footnoteItems.forEach((item) => {
+            item.setAttribute("style", `margin-bottom: 8px; line-height: 1.6; font-size: 13px; color: ${styleConfig.content.footnotes.color}; `);
+          });
+        }
         break;
       case "ul":
-        element.setAttribute("style", `padding-left: 2em; list-style-type: disc; margin: 0; line-height: ${styleConfig.global.contentLineHeight}; font-family: ${styleConfig.global.fontFamily};`);
+        element.setAttribute("style", `padding-left: 2em; list-style-type : disc; margin: 0; line-height: ${styleConfig.global.contentLineHeight}; font-family: ${styleConfig.global.fontFamily}; `);
         break;
       case "ol":
-        element.setAttribute("style", `padding-left: 2em; list-style-type: decimal; margin: 0; line-height: ${styleConfig.global.contentLineHeight}; font-family: ${styleConfig.global.fontFamily};`);
+        element.setAttribute("style", `padding-left: 2em; list-style-type : decimal; margin: 0; line-height: ${styleConfig.global.contentLineHeight}; font-family: ${styleConfig.global.fontFamily}; `);
         break;
       case "li":
-        element.setAttribute("style", `margin: 0; line-height: ${styleConfig.global.contentLineHeight};`);
+        element.setAttribute("style", `margin: 0; line-height: ${styleConfig.global.contentLineHeight}; `);
         break;
       case "a":
-        element.setAttribute("style", `color: ${styleConfig.content.link.color}; text-decoration: underline; font-weight: bold; line-height: ${styleConfig.global.contentLineHeight}; font-family: ${styleConfig.global.fontFamily};`);
+        element.setAttribute("style", `color: ${styleConfig.content.link.color}; text-decoration: underline; font-weight: bold; line-height: ${styleConfig.global.contentLineHeight}; font-family: ${styleConfig.global.fontFamily}; `);
         break;
       case "hr":
         element.setAttribute("style", "border: 0; border-top: 1px solid #ddd; margin: 2em 0;");
         break;
       case "table":
-        element.setAttribute("style", `border-collapse: collapse; width: 100%; border: 1px solid ${styleConfig.content.table.borderColor}; margin: 1.5em 0; font-family: ${styleConfig.global.fontFamily}; line-height: 1.6;`);
+        element.setAttribute("style", `border-collapse: collapse; width: 100%; border: 1px solid ${styleConfig.content.table.borderColor}; margin: 1.5em 0; font-family: ${styleConfig.global.fontFamily}; line-height: 1.6; `);
         break;
       case "thead":
-        element.setAttribute("style", `background-color: ${styleConfig.content.table.headerBg};`);
+        element.setAttribute("style", `background-color: ${styleConfig.content.table.headerBg}; `);
         break;
       case "th":
-        element.setAttribute("style", `border: 1px solid ${styleConfig.content.table.borderColor}; padding: 10px 12px; font-weight: bold; text-align: ${styleConfig.content.table.headerAlign}; background-color: ${styleConfig.content.table.headerBg};`);
+        element.setAttribute("style", `border: 1px solid ${styleConfig.content.table.borderColor}; padding: 10px 12px; font-weight: bold; text-align: ${styleConfig.content.table.headerAlign}; background-color: ${styleConfig.content.table.headerBg}; `);
         break;
       case "td":
-        element.setAttribute("style", `border: 1px solid ${styleConfig.content.table.borderColor}; padding: 10px 12px; text-align: ${styleConfig.content.table.bodyAlign};`);
+        element.setAttribute("style", `border: 1px solid ${styleConfig.content.table.borderColor}; padding: 10px 12px; text-align: ${styleConfig.content.table.bodyAlign}; `);
         break;
       case "img":
         element.setAttribute("style", "max-width: 100%; height: auto; display: block; margin: 1.5em auto;");
@@ -55281,18 +55303,18 @@ var convertToNaverHtml = (html2, styleConfig = defaultStyleConfig) => {
       list.setAttribute("class", "se-text-list se-text-list-type-bullet-disc");
     }
     const currentStyle = list.getAttribute("style") || "";
-    list.setAttribute("style", `${currentStyle} margin: 0; padding-left: 40px;`);
+    list.setAttribute("style", `${currentStyle} margin: 0; padding-left: 40px; `);
     const items = list.querySelectorAll("li");
     items.forEach((item) => {
       item.setAttribute("class", "se-text-list-item");
       const itemStyle = item.getAttribute("style") || "";
-      item.setAttribute("style", `${itemStyle} margin: 0;`);
+      item.setAttribute("style", `${itemStyle} margin: 0; `);
       const p = doc.createElement("p");
       p.setAttribute("class", "se-text-paragraph se-text-paragraph-align-left");
-      p.setAttribute("style", `line-height: ${styleConfig.global.contentLineHeight};`);
+      p.setAttribute("style", `line-height: ${styleConfig.global.contentLineHeight}; `);
       const span = doc.createElement("span");
       span.setAttribute("class", "se-ff-system se-fs15 se-highlight __se-node");
-      span.setAttribute("style", `color: ${styleConfig.content.paragraph.color}; font-size: ${styleConfig.content.paragraph.fontSize}; background-color: rgb(255, 255, 255);`);
+      span.setAttribute("style", `color: ${styleConfig.content.paragraph.color}; font-size: ${styleConfig.content.paragraph.fontSize}; background-color: rgb(255, 255, 255); `);
       while (item.firstChild) {
         span.appendChild(item.firstChild);
       }
@@ -55393,7 +55415,7 @@ var convertToNaverHtml = (html2, styleConfig = defaultStyleConfig) => {
     const table = doc.createElement("table");
     table.setAttribute(
       "style",
-      `border-collapse: separate; border-spacing: 0; width: 100%; margin: 1.5em 0; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; background-color: #f6f8fa; font-family: "NanumGothic", sans-serif;`
+      `border-collapse: separate; border-spacing: 0; width: 100%; margin: 1.5em 0; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; background-color: #f6f8fa; font-family: "NanumGothic", sans-serif; `
     );
     const headerRow = doc.createElement("tr");
     const headerCell = doc.createElement("td");
@@ -55401,13 +55423,13 @@ var convertToNaverHtml = (html2, styleConfig = defaultStyleConfig) => {
     headerCell.textContent = langDisplay;
     headerCell.setAttribute(
       "style",
-      `background-color: #f1f3f5; padding: 6px 12px; font-weight: bold; font-family: "NanumGothic", sans-serif; font-size: 0.85em; color: #666; border-bottom: 1px solid #ddd; text-align: left;`
+      `background-color: #f1f3f5; padding: 6px 12px; font-weight: bold; font-family: "NanumGothic", sans-serif; font-size: 0.85em; color: #666; border-bottom: 1px solid #ddd; text-align: left; `
     );
     headerRow.appendChild(headerCell);
     table.appendChild(headerRow);
     const codeRow = doc.createElement("tr");
     const codeCell = doc.createElement("td");
-    codeCell.setAttribute("style", `padding: 0; background-color: #f6f8fa;`);
+    codeCell.setAttribute("style", `padding: 0; background-color: #f6f8fa; `);
     const scrollWrapper = doc.createElement("div");
     scrollWrapper.setAttribute(
       "style",
@@ -55596,11 +55618,68 @@ var MarklogPlugin = class extends import_obsidian2.Plugin {
       return "\n\n" + "&nbsp;\n\n".repeat(emptyLineCount);
     });
     markdown = markdown.replace(/==(.+?)==/g, "<mark>$1</mark>");
+    const footnotes = /* @__PURE__ */ new Map();
+    const footnoteRefExtension = {
+      name: "footnoteRef",
+      level: "inline",
+      start(src) {
+        var _a;
+        return (_a = src.match(/\[\^([^\]]+)\]/)) == null ? void 0 : _a.index;
+      },
+      tokenizer(src) {
+        const rule = /^\[\^([^\]]+)\]/;
+        const match = rule.exec(src);
+        if (match) {
+          return {
+            type: "footnoteRef",
+            raw: match[0],
+            id: match[1]
+          };
+        }
+      },
+      renderer(token) {
+        return `<sup>[${token.id}]</sup>`;
+      }
+    };
+    const footnoteDefExtension = {
+      name: "footnoteDef",
+      level: "block",
+      start(src) {
+        var _a;
+        return (_a = src.match(/^\[\^([^\]]+)\]:\s+/)) == null ? void 0 : _a.index;
+      },
+      tokenizer(src) {
+        const rule = /^\[\^([^\]]+)\]:\s+(.*(?:\n(?!\[\^).+)*)/;
+        const match = rule.exec(src);
+        if (match) {
+          return {
+            type: "footnoteDef",
+            raw: match[0],
+            id: match[1],
+            text: match[2].trim()
+          };
+        }
+      },
+      renderer(token) {
+        footnotes.set(token.id, token.text);
+        return "";
+      }
+    };
+    marked.use({ extensions: [footnoteRefExtension, footnoteDefExtension] });
     try {
       const rawHtml = marked.parse(markdown, { async: false });
-      const sanitized = purify.sanitize(rawHtml, {
+      let htmlWithFootnotes = rawHtml;
+      if (footnotes.size > 0) {
+        htmlWithFootnotes += '<div class="footnotes">';
+        footnotes.forEach((text2, id) => {
+          const parsedText = marked.parseInline(text2);
+          htmlWithFootnotes += `<div class="footnote-item" id="fn-${id}">[${id}] ${parsedText}</div>`;
+        });
+        htmlWithFootnotes += "</div>";
+      }
+      const sanitized = purify.sanitize(htmlWithFootnotes, {
         ADD_TAGS: ["iframe"],
-        ADD_ATTR: ["class", "style", "target"]
+        ADD_ATTR: ["class", "style", "target", "id"]
       });
       const finalHtml = convertToNaverHtml(sanitized, this.settings);
       const blobHtml = new Blob([finalHtml], { type: "text/html" });
