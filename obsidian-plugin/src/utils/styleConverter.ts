@@ -9,11 +9,11 @@ export interface StyleConfig {
         contentLineHeight: string; // 본문용 줄간격
     };
     headers: {
-        h1: { color: string; fontSize: string; fontWeight: string; underlined?: boolean; backgroundColor?: string };
-        h2: { color: string; fontSize: string; fontWeight: string; underlined?: boolean; backgroundColor?: string };
-        h3: { color: string; fontSize: string; fontWeight: string; underlined?: boolean; backgroundColor?: string };
-        h4: { color: string; fontSize: string; fontWeight: string; underlined?: boolean; backgroundColor?: string };
-        h5: { color: string; fontSize: string; fontWeight: string; underlined?: boolean; backgroundColor?: string };
+        h1: { color: string; fontSize: string; fontWeight: string; underlined?: boolean; backgroundColor?: string; underlineColor?: string };
+        h2: { color: string; fontSize: string; fontWeight: string; underlined?: boolean; backgroundColor?: string; underlineColor?: string };
+        h3: { color: string; fontSize: string; fontWeight: string; underlined?: boolean; backgroundColor?: string; underlineColor?: string };
+        h4: { color: string; fontSize: string; fontWeight: string; underlined?: boolean; backgroundColor?: string; underlineColor?: string };
+        h5: { color: string; fontSize: string; fontWeight: string; underlined?: boolean; backgroundColor?: string; underlineColor?: string };
     };
     content: {
         blockquote: { bg: string; border: string; color: string };
@@ -35,11 +35,11 @@ export const defaultStyleConfig: StyleConfig = {
         contentLineHeight: '1.8'   // 본문 기본값
     },
     headers: {
-        h1: { color: '#000000', fontSize: '34px', fontWeight: 'bold', underlined: false, backgroundColor: '#ffffff' },
-        h2: { color: '#000000', fontSize: '28px', fontWeight: 'bold', underlined: false, backgroundColor: '#ffffff' },
-        h3: { color: '#000000', fontSize: '24px', fontWeight: 'bold', underlined: false, backgroundColor: '#ffffff' },
-        h4: { color: '#000000', fontSize: '19px', fontWeight: 'bold', underlined: false, backgroundColor: '#ffffff' },
-        h5: { color: '#000000', fontSize: '16px', fontWeight: 'bold', underlined: false, backgroundColor: '#ffffff' },
+        h1: { color: '#000000', fontSize: '34px', fontWeight: 'bold', underlined: false, backgroundColor: '#ffffff', underlineColor: '#000000' },
+        h2: { color: '#000000', fontSize: '28px', fontWeight: 'bold', underlined: false, backgroundColor: '#ffffff', underlineColor: '#000000' },
+        h3: { color: '#000000', fontSize: '24px', fontWeight: 'bold', underlined: false, backgroundColor: '#ffffff', underlineColor: '#000000' },
+        h4: { color: '#000000', fontSize: '19px', fontWeight: 'bold', underlined: false, backgroundColor: '#ffffff', underlineColor: '#000000' },
+        h5: { color: '#000000', fontSize: '16px', fontWeight: 'bold', underlined: false, backgroundColor: '#ffffff', underlineColor: '#000000' },
     },
     content: {
         blockquote: { bg: '#f6f8fa', border: '#0366d6', color: '#24292e' },
@@ -76,9 +76,10 @@ export const convertToNaverHtml = (html: string, styleConfig: StyleConfig = defa
                         // Table 구조로 변환 (배경색 + 하단 보더 2px)
                         const table = document.createElement('table');
                         const bgColor = hConfig.backgroundColor || '#ffffff';
+                        const borderColor = hConfig.underlineColor || hConfig.color;
 
                         // border-collapse: collapse 필수, width 100%
-                        table.setAttribute('style', `width: 100%; border-bottom: 2px solid ${hConfig.color}; background-color: ${bgColor}; border-collapse: collapse; margin-block-start: 0.83em; margin-block-end: 0.83em;`);
+                        table.setAttribute('style', `width: 100%; border-bottom: 2px solid ${borderColor}; background-color: ${bgColor}; border-collapse: collapse; margin-block-start: 0.83em; margin-block-end: 0.83em;`);
 
                         const tr = document.createElement('tr');
                         const td = document.createElement('td');

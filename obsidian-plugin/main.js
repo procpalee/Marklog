@@ -55150,11 +55150,11 @@ var defaultStyleConfig = {
     // 본문 기본값
   },
   headers: {
-    h1: { color: "#000000", fontSize: "34px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff" },
-    h2: { color: "#000000", fontSize: "28px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff" },
-    h3: { color: "#000000", fontSize: "24px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff" },
-    h4: { color: "#000000", fontSize: "19px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff" },
-    h5: { color: "#000000", fontSize: "16px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff" }
+    h1: { color: "#000000", fontSize: "34px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff", underlineColor: "#000000" },
+    h2: { color: "#000000", fontSize: "28px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff", underlineColor: "#000000" },
+    h3: { color: "#000000", fontSize: "24px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff", underlineColor: "#000000" },
+    h4: { color: "#000000", fontSize: "19px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff", underlineColor: "#000000" },
+    h5: { color: "#000000", fontSize: "16px", fontWeight: "bold", underlined: false, backgroundColor: "#ffffff", underlineColor: "#000000" }
   },
   content: {
     blockquote: { bg: "#f6f8fa", border: "#0366d6", color: "#24292e" },
@@ -55186,7 +55186,8 @@ var convertToNaverHtml = (html2, styleConfig = defaultStyleConfig) => {
           if (hConfig.underlined) {
             const table = document.createElement("table");
             const bgColor = hConfig.backgroundColor || "#ffffff";
-            table.setAttribute("style", `width: 100%; border-bottom: 2px solid ${hConfig.color}; background-color: ${bgColor}; border-collapse: collapse; margin-block-start: 0.83em; margin-block-end: 0.83em;`);
+            const borderColor = hConfig.underlineColor || hConfig.color;
+            table.setAttribute("style", `width: 100%; border-bottom: 2px solid ${borderColor}; background-color: ${bgColor}; border-collapse: collapse; margin-block-start: 0.83em; margin-block-end: 0.83em;`);
             const tr = document.createElement("tr");
             const td = document.createElement("td");
             td.setAttribute("style", `padding: 5px 0 10px 0; color: ${hConfig.color}; font-size: ${hConfig.fontSize}; font-weight: ${hConfig.fontWeight}; font-family: ${styleConfig.global.fontFamily}; line-height: ${styleConfig.global.headerLineHeight}; border: none;`);
@@ -55649,7 +55650,7 @@ var MarklogPlugin = class extends import_obsidian2.Plugin {
         return (_a = src.match(/^\[\^([^\]]+)\]:\s+/)) == null ? void 0 : _a.index;
       },
       tokenizer(src) {
-        const rule = /^\[\^([^\]]+)\]:\s+(.*(?:\n(?!\[\^).+)*)/;
+        const rule = /^\[\^([^\]]+)\]:\s+([\s\S]*?(?=\n\[\^|$))/;
         const match = rule.exec(src);
         if (match) {
           return {
@@ -55672,7 +55673,7 @@ var MarklogPlugin = class extends import_obsidian2.Plugin {
       if (footnotes.size > 0) {
         htmlWithFootnotes += '<div class="footnotes">';
         footnotes.forEach((text2, id) => {
-          const parsedText = marked.parseInline(text2);
+          const parsedText = marked.parseInline(text2.replace(/\n/g, "<br>"));
           htmlWithFootnotes += `<div class="footnote-item" id="fn-${id}">[${id}] ${parsedText}</div>`;
         });
         htmlWithFootnotes += "</div>";

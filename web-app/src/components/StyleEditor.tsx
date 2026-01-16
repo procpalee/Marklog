@@ -372,14 +372,24 @@ const StyleEditor: React.FC<StyleEditorProps> = ({ config, onChange }) => {
                                     </div>
 
                                     {config.headers[level].underlined && (
-                                        <div className="flex-1 min-w-0">
-                                            <InputLabel className="mb-1 block">배경색</InputLabel>
-                                            <ColorInput
-                                                value={config.headers[level].backgroundColor || '#ffffff'}
-                                                onChange={(val) => handleDeepChange('headers', level, 'backgroundColor', val)}
-                                                defaultValue="#ffffff"
-                                            />
-                                        </div>
+                                        <Row>
+                                            <div className="flex-1 min-w-0">
+                                                <InputLabel className="mb-1 block">배경색</InputLabel>
+                                                <ColorInput
+                                                    value={config.headers[level].backgroundColor || '#ffffff'}
+                                                    onChange={(val) => handleDeepChange('headers', level, 'backgroundColor', val)}
+                                                    defaultValue="#ffffff"
+                                                />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <InputLabel className="mb-1 block">밑줄 색상</InputLabel>
+                                                <ColorInput
+                                                    value={config.headers[level].underlineColor || config.headers[level].color}
+                                                    onChange={(val) => handleDeepChange('headers', level, 'underlineColor', val)}
+                                                    defaultValue={defaultStyleConfig.headers[level].color}
+                                                />
+                                            </div>
+                                        </Row>
                                     )}
                                 </div>
                             </SectionCard>

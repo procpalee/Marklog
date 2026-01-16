@@ -130,7 +130,7 @@ export default class MarklogPlugin extends Plugin {
             level: 'block',
             start(src: string) { return src.match(/^\[\^([^\]]+)\]:\s+/)?.index; },
             tokenizer(src: string) {
-                const rule = /^\[\^([^\]]+)\]:\s+(.*(?:\n(?!\[\^).+)*)/;
+                const rule = /^\[\^([^\]]+)\]:\s+([\s\S]*?(?=\n\[\^|$))/;
                 const match = rule.exec(src);
                 if (match) {
                     return {
@@ -160,11 +160,13 @@ export default class MarklogPlugin extends Plugin {
                 htmlWithFootnotes += '<div class="footnotes">';
                 footnotes.forEach((text, id) => {
                     // Process text inside footnote (allow inline markdown)
-                    const parsedText = marked.parseInline(text);
+                    // 줄바꿈을 <br>로 변환하여 적용
+                    const parsedText = marked.parseInline(text.replace(/\n/g, '<br>'));
                     htmlWithFootnotes += `<div class="footnote-item" id="fn-${id}">[${id}] ${parsedText}</div>`;
                 });
                 htmlWithFootnotes += '</div>';
             }
+
 
             // Sanitize
             const sanitized = DOMPurify.sanitize(htmlWithFootnotes, {
