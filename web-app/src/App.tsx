@@ -156,7 +156,7 @@ function App() {
       level: 'block',
       start(src: string) { return src.match(/^\[\^([^\]]+)\]:\s+/)?.index; },
       tokenizer(src: string) {
-        const rule = /^\[\^([^\]]+)\]:\s+([\s\S]*?(?=\n\[\^|$))/;
+        const rule = /^\[\^([^\]]+)\]:\s+(.*(?:\n(?!\[\^).+)*)/;
         const match = rule.exec(src);
         if (match) {
           return {
@@ -184,8 +184,7 @@ function App() {
       htmlWithFootnotes += '<div class="footnotes">';
       footnotes.forEach((text, id) => {
         // Process text inside footnote (allow inline markdown)
-        // 줄바꿈을 <br>로 변환하여 적용
-        const parsedText = marked.parseInline(text.replace(/\n/g, '<br>'));
+        const parsedText = marked.parseInline(text);
         htmlWithFootnotes += `<div class="footnote-item" id="fn-${id}">[${id}] ${parsedText}</div>`;
       });
       htmlWithFootnotes += '</div>';

@@ -55252,7 +55252,7 @@ var convertToNaverHtml = (html2, styleConfig = defaultStyleConfig) => {
           element.setAttribute("style", `margin-top: 40px; border-top: 1px solid ${styleConfig.content.footnotes.separatorColor}; padding-top: 20px; font-size: ${styleConfig.content.footnotes.fontSize}; color: ${styleConfig.content.footnotes.color}; font-family: ${styleConfig.global.fontFamily}; `);
           const footnoteItems = element.querySelectorAll("div.footnote-item");
           footnoteItems.forEach((item) => {
-            item.setAttribute("style", `margin-bottom: 8px; line-height: 1.6; font-size: 13px; color: ${styleConfig.content.footnotes.color}; `);
+            item.setAttribute("style", `margin-bottom: 16px; line-height: 1.6; font-size: 13px; color: ${styleConfig.content.footnotes.color}; white-space: pre-wrap; `);
           });
         }
         break;
@@ -55666,14 +55666,14 @@ var MarklogPlugin = class extends import_obsidian2.Plugin {
         return "";
       }
     };
-    marked.use({ extensions: [footnoteRefExtension, footnoteDefExtension] });
+    marked.use({ extensions: [footnoteRefExtension, footnoteDefExtension], breaks: true, gfm: true });
     try {
       const rawHtml = marked.parse(markdown, { async: false });
       let htmlWithFootnotes = rawHtml;
       if (footnotes.size > 0) {
         htmlWithFootnotes += '<div class="footnotes">';
         footnotes.forEach((text2, id) => {
-          const parsedText = marked.parseInline(text2.replace(/\n/g, "<br>"));
+          const parsedText = marked.parseInline(text2.replace(/\n/g, "<br>\n"), { breaks: false });
           htmlWithFootnotes += `<div class="footnote-item" id="fn-${id}">[${id}] ${parsedText}</div>`;
         });
         htmlWithFootnotes += "</div>";
