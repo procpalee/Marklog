@@ -382,7 +382,7 @@ function App() {
           <footer className="shrink-0 py-4 text-center text-sm text-gray-500 bg-slate-50 border-t border-slate-200">
             Powered by MarkLog | Developed by {' '}
             <a
-              href="https://procpa.co.kr"
+              href="https://blog.naver.com/procpalee"
               target="_blank"
               rel="noopener noreferrer"
               className="font-bold text-blue-500 hover:text-blue-600 hover:underline transition-colors"
