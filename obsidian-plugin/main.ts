@@ -6,6 +6,7 @@ import { NaverBlogSettingTab } from './src/settings/NaverBlogSettingTab';
 
 export default class MarklogPlugin extends Plugin {
     settings: StyleConfig;
+    footnotes: Map<string, string> = new Map();
 
     async onload() {
         await this.loadSettings();
@@ -42,6 +43,53 @@ export default class MarklogPlugin extends Plugin {
             }
         });
         marked.use({ breaks: true, gfm: true });
+
+        // Custom Extension for Footnotes (Defined once in onload)
+        const footnoteRefExtension = {
+            name: 'footnoteRef',
+            level: 'inline',
+            start(src: string) { return src.match(/\[\^([^\]]+)\]/)?.index; },
+            tokenizer(src: string) {
+                const rule = /^\[\^([^\]]+)\]/;
+                const match = rule.exec(src);
+                if (match) {
+                    return {
+                        type: 'footnoteRef',
+                        raw: match[0],
+                        id: match[1]
+                    };
+                }
+            },
+            renderer(token: any) {
+                return `<sup>[${token.id}]</sup>`;
+            }
+        };
+
+        const self = this;
+        const footnoteDefExtension = {
+            name: 'footnoteDef',
+            level: 'block',
+            start(src: string) { return src.match(/^\[\^([^\]]+)\]:\s+/)?.index; },
+            tokenizer(src: string) {
+                const rule = /^\[\^([^\]]+)\]:\s+(.*(?:[\r\n]+(?!\[\^).*)*)/;
+                const match = rule.exec(src);
+                if (match) {
+                    return {
+                        type: 'footnoteDef',
+                        raw: match[0],
+                        id: match[1],
+                        text: match[2].trim().split(/[\r\n]+/).join('<br>')
+                    };
+                }
+            },
+            renderer(token: any) {
+                // Store definition but don't render it in place
+                self.footnotes.set(token.id, token.text);
+                return '';
+            }
+        };
+
+        marked.use({ extensions: [footnoteRefExtension, footnoteDefExtension] as any });
 
         // Add Ribbon Icon
         this.addRibbonIcon('documents', 'Marklog: Copy as Naver Blog HTML', async (evt: MouseEvent) => {
@@ -101,64 +149,18 @@ export default class MarklogPlugin extends Plugin {
         // 2. Highlight syntax (==text==)
         markdown = markdown.replace(/==(.+?)==/g, '<mark>$1</mark>');
 
-        // Footnote storage
-        const footnotes = new Map<string, string>();
-
-        // Custom Extension for Footnotes
-        const footnoteRefExtension = {
-            name: 'footnoteRef',
-            level: 'inline',
-            start(src: string) { return src.match(/\[\^([^\]]+)\]/)?.index; },
-            tokenizer(src: string) {
-                const rule = /^\[\^([^\]]+)\]/;
-                const match = rule.exec(src);
-                if (match) {
-                    return {
-                        type: 'footnoteRef',
-                        raw: match[0],
-                        id: match[1]
-                    };
-                }
-            },
-            renderer(token: any) {
-                return `<sup>[${token.id}]</sup>`;
-            }
-        };
-
-        const footnoteDefExtension = {
-            name: 'footnoteDef',
-            level: 'block',
-            start(src: string) { return src.match(/^\[\^([^\]]+)\]:\s+/)?.index; },
-            tokenizer(src: string) {
-                const rule = /^\[\^([^\]]+)\]:\s+(.*(?:[\r\n]+(?!\[\^).*)*)/;
-                const match = rule.exec(src);
-                if (match) {
-                    return {
-                        type: 'footnoteDef',
-                        raw: match[0],
-                        id: match[1],
-                        text: match[2].trim().split(/[\r\n]+/).join('<br>')
-                    };
-                }
-            },
-            renderer(token: any) {
-                // Store definition but don't render it in place
-                footnotes.set(token.id, token.text);
-                return '';
-            }
-        };
-
-        marked.use({ extensions: [footnoteRefExtension, footnoteDefExtension] as any });
+        // Clear footnotes for this run
+        this.footnotes.clear();
 
         // Convert to HTML
         try {
-            const rawHtml = marked.parse(markdown, { async: false }) as string;
+            const rawHtml = marked.parse(markdown) as string;
 
             // Append Footnotes if any exist
             let htmlWithFootnotes = rawHtml;
-            if (footnotes.size > 0) {
+            if (this.footnotes.size > 0) {
                 htmlWithFootnotes += '<div class="footnotes">';
-                footnotes.forEach((text, id) => {
+                this.footnotes.forEach((text, id) => {
                     // Process text inside footnote (allow inline markdown)
                     const parsedText = marked.parseInline(text);
                     htmlWithFootnotes += `<div class="footnote-item" id="fn-${id}">[${id}] ${parsedText}</div>`;
@@ -178,6 +180,7 @@ export default class MarklogPlugin extends Plugin {
             // Copy to Clipboard
             const blobHtml = new Blob([finalHtml], { type: 'text/html' });
             const blobText = new Blob([finalHtml], { type: 'text/plain' });
+            // Note: ClipboardItem support varies, but is standard in modern Chrome (Electron)
             const data = [new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })];
 
             await navigator.clipboard.write(data);
@@ -185,7 +188,7 @@ export default class MarklogPlugin extends Plugin {
 
         } catch (error) {
             console.error(error);
-            new Notice('Failed to convert or copy. Check console for details.');
+            new Notice(`Failed to convert or copy: ${error}`);
         }
     }
 }
