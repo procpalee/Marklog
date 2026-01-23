@@ -1,7 +1,7 @@
 {
     "id": "marklog-obsidian",
     "name": "Marklog",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "minAppVersion": "0.15.0",
     "description": "Convert Markdown to Naver Blog HTML with customizable styles.",
     "author": "PROCPA",

@@ -40,6 +40,8 @@ Markdown2Naver/
 ### 1. 강력한 마크다운 파싱
 
 - **GFM (GitHub Flavored Markdown)** 문법 완벽 지원
+- **GFM (GitHub Flavored Markdown)** 문법 완벽 지원
+- **콜아웃(Callout) 지원**: Obsidian 스타일의 `> [!Note]` 문법을 네이버 블로그에 맞는 예쁜 박스 디자인으로 변환 (Blue, Cyan, Green 테마 자동 적용)
 - **코드 하이라이팅**: `highlight.js`를 적용하여 개발 블로그에 최적화된 코드 스타일 제공
 
 ### 2. 스타일 프리셋 및 저장 (Presets & Storage)
