@@ -135,8 +135,19 @@ export default class MarklogPlugin extends Plugin {
             return;
         }
 
-        // Get full content
-        let markdown = markdownView.getViewData();
+        // Check for selection
+        const editor = markdownView.editor;
+        const selection = editor.getSelection();
+        let markdown = '';
+        let sourceMode = '';
+
+        if (selection && selection.length > 0) {
+            markdown = selection;
+            sourceMode = 'Selection';
+        } else {
+            markdown = markdownView.getViewData();
+            sourceMode = 'Full Document';
+        }
 
         // Pre-process markdown (Same as App.tsx)
         // 1. Handle consecutive newlines for Naver Blog compatibility
@@ -184,7 +195,8 @@ export default class MarklogPlugin extends Plugin {
             const data = [new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })];
 
             await navigator.clipboard.write(data);
-            new Notice('Naver Blog HTML copied to clipboard!');
+            await navigator.clipboard.write(data);
+            new Notice(`Naver Blog HTML copied to clipboard! (${sourceMode})`);
 
         } catch (error) {
             console.error(error);
