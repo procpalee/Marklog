@@ -61,7 +61,30 @@ console.log("Hello, MarkLog!");
 | 미리보기 | 실시간 확인 |
 | 복사 | HTML 변환 |
 
-#### 1️⃣1️⃣ 각주(Footnote)
+#### 1️⃣1️⃣ 콜아웃(Callout)
+
+> [!Note] 노트 (Note) - Blue
+> note, summary, abstract, tldr
+
+> [!Info] 정보 (Info) - Blue
+> info, todo, tip, hint, important
+
+> [!Check] 확인 (Check) - Green
+> check, success, done, question, help, faq
+
+> [!Warning] 주의 (Warning) - Yellow
+> warning, caution, attention
+
+> [!Danger] 경고 (Danger) - Red
+> failure, fail, missing, danger, error, bug
+
+> [!Example] 예시 (Example) - Purple
+> example
+
+> [!Quote] 인용 (Quote) - Gray
+> quote
+
+#### 1️⃣2️⃣ 각주(Footnote)
 
 각주 예시입니다[^1].
 

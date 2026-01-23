@@ -54,6 +54,73 @@ export const defaultStyleConfig: StyleConfig = {
     }
 };
 
+const CalloutColors: Record<string, string> = {
+    // 1. Blue Group (파랑색 계열)
+    note: '#155DFC',
+    summary: '#155DFC',
+    abstract: '#155DFC',
+    tldr: '#155DFC',
+    
+    // 2. Cyan Group (청록색 계열)
+    info: '#0EA5E9',
+    todo: '#0EA5E9',
+    tip: '#0EA5E9',
+    hint: '#0EA5E9',
+    important: '#0EA5E9',
+    
+    // 3. Green Group (초록색 계열)
+    success: '#009f6c',
+    check: '#009f6c',
+    done: '#009f6c',
+    question: '#009f6c',
+    help: '#009f6c',
+    faq: '#009f6c',
+    
+    // Others (Legacy/Etc)
+    warning: '#ec7500',   // Orange
+    caution: '#ec7500',
+    attention: '#ec7500',
+    failure: '#e93147',   // Red
+    fail: '#e93147',
+    missing: '#e93147',
+    danger: '#e93147',
+    error: '#e93147',
+    bug: '#e93147',
+    example: '#7852ee',   // Purple
+    quote: '#989898',     // Gray
+    check2: '#00b0f0'
+};
+
+const CalloutIcons: Record<string, string> = {
+    note: '✏️',
+    abstract: '📋',
+    summary: '📋',
+    tldr: '📋',
+    info: 'ℹ️',
+    todo: '✅',
+    tip: '🔥',
+    hint: '🔥',
+    important: '🔥',
+    success: '✔️',
+    check: '✔️',
+    done: '✔️',
+    question: '❓',
+    help: '❓',
+    faq: '❓',
+    warning: '⚠️',
+    caution: '⚠️',
+    attention: '⚠️',
+    failure: '❌',
+    fail: '❌',
+    missing: '❌',
+    danger: '⚡',
+    error: '⚡',
+    bug: '⚡',
+    example: '🟣',
+    quote: '❝',
+    check2: '✔️'
+};
+
 export const convertToNaverHtml = (html: string, styleConfig: StyleConfig = defaultStyleConfig): string => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -273,23 +340,113 @@ export const convertToNaverHtml = (html: string, styleConfig: StyleConfig = defa
         });
     });
 
-    // 3. Blockquote를 div로 변환
+    // 3. Blockquote를 div로 변환 (Callout 지원 추가)
     const blockquotes = doc.body.querySelectorAll('blockquote');
     blockquotes.forEach((blockquote) => {
-        // 마지막 p 태그의 빈 줄(&nbsp;) 제거 처리 등...
-        // 여기서는 간단하게 div로 치환하고 스타일 유지
-        const div = doc.createElement('div');
-        div.setAttribute('style', blockquote.getAttribute('style') || '');
-        div.innerHTML = blockquote.innerHTML;
+        const firstP = blockquote.querySelector('p');
+        let isCallout = false;
+        let type = '';
+        let color = '#444';
+        const titleFragment = doc.createDocumentFragment();
 
-        // 내부 p 태그 스타일 재적용 (line-height 포함)
-        const ps = div.querySelectorAll('p');
-        ps.forEach(p => {
-            p.style.margin = '0 0 0.5em 0';
-            p.style.lineHeight = styleConfig.global.contentLineHeight;
-        });
+        // 1. Callout 감지
+        if (firstP && firstP.firstChild && firstP.firstChild.nodeType === Node.TEXT_NODE && firstP.firstChild.nodeValue) {
+            const match = firstP.firstChild.nodeValue.match(/^\[!(\w+)\]/);
+            if (match) {
+                isCallout = true;
+                type = match[1].toLowerCase();
+                color = CalloutColors[type] || '#444';
+                
+                // 제목 노드 추출 logic
+                const childNodes = Array.from(firstP.childNodes);
+                let stopIndex = -1;
+                
+                for (let i = 0; i < childNodes.length; i++) {
+                    if (childNodes[i].nodeName === 'BR') {
+                        stopIndex = i;
+                        break;
+                    }
+                }
+                
+                const titleNodes = stopIndex === -1 ? childNodes : childNodes.slice(0, stopIndex);
+                
+                // 첫 번째 노드에서 [!Type] 제거
+                if (titleNodes.length > 0 && titleNodes[0].nodeType === Node.TEXT_NODE && titleNodes[0].nodeValue) {
+                     const val = titleNodes[0].nodeValue;
+                     if (val.startsWith(match[0])) {
+                         titleNodes[0].nodeValue = val.substring(match[0].length).trimStart();
+                     }
+                }
+                
+                // 제목 노드들을 fragment로 이동
+                titleNodes.forEach(node => titleFragment.appendChild(node));
+                
+                // BR 태그 처리
+                if (stopIndex !== -1) {
+                    childNodes[stopIndex].remove();
+                }
+                
+                if (!firstP.hasChildNodes()) {
+                    firstP.remove();
+                }
+            }
+        }
 
-        blockquote.parentNode?.replaceChild(div, blockquote);
+        if (isCallout) {
+            // Naver Blog 호환성을 위해 Table로 구조화
+            const table = doc.createElement('table');
+            table.setAttribute('style', `border-collapse: collapse; width: 100%; border: 1px solid ${color}; border-left: 4px solid ${color}; background-color: #ffffff; margin: 1em 0; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);`);
+            
+            // Header (제목)
+            const headerTr = doc.createElement('tr');
+            const headerTd = doc.createElement('td');
+            headerTd.setAttribute('style', `background-color: ${color}15; padding: 8px 15px; font-weight: bold; color: ${color}; font-size: 16px; border-bottom: 1px solid ${color}30; font-family: ${styleConfig.global.fontFamily};`);
+            
+            // 아이콘 추가
+            const icon = CalloutIcons[type] || '📝';
+            headerTd.appendChild(doc.createTextNode(`${icon} `));
+            
+            // 제목이 비어있으면 Type 이름 사용
+            if (titleFragment.textContent?.trim() === '' && titleFragment.children.length === 0) {
+                 headerTd.appendChild(doc.createTextNode(type.charAt(0).toUpperCase() + type.slice(1)));
+            } else {
+                 headerTd.appendChild(titleFragment);
+            }
+
+            headerTr.appendChild(headerTd);
+            table.appendChild(headerTr);
+
+            // Content (내용)
+            if (blockquote.childNodes.length > 0) {
+                const contentTr = doc.createElement('tr');
+                const contentTd = doc.createElement('td');
+                contentTd.setAttribute('style', `padding: 15px; color: ${styleConfig.content.paragraph.color}; font-size: ${styleConfig.content.paragraph.fontSize}; line-height: ${styleConfig.global.contentLineHeight}; font-family: ${styleConfig.global.fontFamily};`);
+                
+                while (blockquote.firstChild) {
+                     contentTd.appendChild(blockquote.firstChild);
+                }
+                
+                contentTr.appendChild(contentTd);
+                table.appendChild(contentTr);
+            }
+
+            blockquote.parentNode?.replaceChild(table, blockquote);
+
+        } else {
+            // 일반 Blockquote 처리
+            const div = doc.createElement('div');
+            div.setAttribute('style', blockquote.getAttribute('style') || '');
+            div.innerHTML = blockquote.innerHTML;
+    
+            // 내부 p 태그 스타일 재적용
+            const ps = div.querySelectorAll('p');
+            ps.forEach(p => {
+                p.style.margin = '0 0 0.5em 0';
+                p.style.lineHeight = styleConfig.global.contentLineHeight;
+            });
+    
+            blockquote.parentNode?.replaceChild(div, blockquote);
+        }
     });
 
     // 4. PRE/CODE 블록 처리 (Highlight.js 적용 - 단순화 및 안정화)
